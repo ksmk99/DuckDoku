@@ -1,0 +1,7 @@
+﻿namespace DuckDoku.Puzzle                                                                                                                                                                              
+{                                                                                                                                                                                                      
+    public static class PuzzleVersion                                                                                                                                                                  
+    {                                                                                                                                                                                                  
+        public const string Value = "0.1.0";                                                                                                                                                           
+    }                                                                                                                                                                                                  
+}

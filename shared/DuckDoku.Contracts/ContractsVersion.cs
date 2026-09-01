@@ -1,0 +1,7 @@
+﻿namespace DuckDoku.Contracts                                                                                                                                                                           
+{                                                                                                                                                                                                      
+    public static class ContractsVersion                                                                                                                                                               
+    {                                                                                                                                                                                                  
+        public const string Value = "0.1.1";                                                                                                                                                           
+    }                                                                                                                                                                                                  
+}
