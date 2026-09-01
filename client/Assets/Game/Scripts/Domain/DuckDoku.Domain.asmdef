@@ -1,0 +1,16 @@
+{
+    "name": "DuckDoku.Domain",
+    "rootNamespace": "DuckDoku.Domain",
+    "references": [
+        "GUID:a4e81ad3958f6874a9fe8bc2620fab6c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

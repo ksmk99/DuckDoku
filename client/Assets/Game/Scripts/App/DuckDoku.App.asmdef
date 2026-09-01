@@ -1,0 +1,21 @@
+{
+    "name": "DuckDoku.App",
+    "rootNamespace": "DuckDoku.App",
+    "references": [
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:0d8beb7f090555447a6cf5ce9e54dbb4",
+        "GUID:4b338cb32f1ba0b4787d6fe0dbd8fe07",
+        "GUID:ea256cf838f69a045b917cdcb8557c7a",
+        "GUID:a4e81ad3958f6874a9fe8bc2620fab6c",
+        "GUID:04818a304fc1e8d4796ec327e6ba4ec0"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
