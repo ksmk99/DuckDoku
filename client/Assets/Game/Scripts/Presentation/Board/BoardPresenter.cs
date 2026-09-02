@@ -11,15 +11,13 @@ namespace DuckDoku.Presentation
         private readonly ILevelSource _levelSource;
         private readonly BoardView _boardView;
         private readonly GamePlayView _gameplayView;
-        private readonly GameplaySettings _settings;
 
         private BoardState _board;
 
         public BoardPresenter(
             ILevelSource levelSource,
             BoardView boardView,
-            GamePlayView gameplayView,
-            GameplaySettings settings)
+            GamePlayView gameplayView)
         {
             if (levelSource == null)
             {
@@ -36,15 +34,9 @@ namespace DuckDoku.Presentation
                 throw new ArgumentNullException(nameof(gameplayView));
             }
 
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
             _levelSource = levelSource;
             _boardView = boardView;
             _gameplayView = gameplayView;
-            _settings = settings;
         }
 
         public void Initialize()
@@ -68,7 +60,7 @@ namespace DuckDoku.Presentation
             _gameplayView.SetNextEnabled(false);
             _gameplayView.ShowVictory(false);
 
-            PuzzleDefinition definition = await _levelSource.GetPuzzleAsync(_settings.Size, _settings.Difficulty);
+            PuzzleDefinition definition = await _levelSource.GetNextPuzzleAsync();
 
             DetachBoard();
 

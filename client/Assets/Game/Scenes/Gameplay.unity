@@ -866,7 +866,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.33957243, b: 1, a: 0.11764706}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1580,8 +1580,8 @@ MonoBehaviour:
   _boardView: {fileID: 1146262530}
   _gameplayView: {fileID: 1440775276}
   _settings:
-    _size: 6
-    _difficulty: 1
+    _size: 10
+    _difficulty: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

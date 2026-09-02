@@ -9,15 +9,13 @@ namespace DuckDoku.App
     {
         [SerializeField] private BoardView _boardView;
         [SerializeField] private GamePlayView _gameplayView;
-        [SerializeField] private GameplaySettings _settings;
 
         public override void InstallBindings()
         {
-            Container.BindInstance(_settings);
             Container.BindInstance(_boardView);
             Container.BindInstance(_gameplayView);
 
-            Container.Bind<ILevelSource>().To<LocalLevelSource>().AsSingle();
+            Container.Bind<ILevelSource>().To<CatalogLevelSource>().AsSingle();
             Container.BindInterfacesTo<BoardPresenter>().AsSingle();
         }
     }

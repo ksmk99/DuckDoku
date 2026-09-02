@@ -550,7 +550,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 985dfea7c3c155b46a805f8f9929abaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DuckDoku.App::DuckDoku.App.BootSceneInstaller
-  _markerOutput: {fileID: 190894741}
+  _authOutput: {fileID: 190894741}
+  _serverUrl: http://localhost:5190
 --- !u!1 &1636849704
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,0 +1,19 @@
+{
+    "name": "DuckDoku.App.Editor",
+    "rootNamespace": "DuckDoku.App",
+    "references": [
+        "DuckDoku.App",
+        "DuckDoku.Puzzle"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
