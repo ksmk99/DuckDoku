@@ -14,6 +14,11 @@ builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Database")));
 
+builder.Services.AddSingleton<LevelCatalogService>();
+builder.Services.AddSingleton<ILevelCatalogLoader, LevelCatalogLoader>();
+
+builder.Services.AddHostedService<LevelCatalogInitializer>();
+
 WebApplication app = builder.Build();
 
 
@@ -37,5 +42,6 @@ app.MapHealthEndpoints();
 app.MapAuthEndpoints();
 app.MapProfileEndpoints();
 app.MapServerTimeEndpoints();
+app.MapLevelEndpoints();
 
 app.Run();

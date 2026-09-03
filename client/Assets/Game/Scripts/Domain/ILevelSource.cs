@@ -1,10 +1,10 @@
-using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using DuckDoku.Puzzle;
 
 namespace DuckDoku.Domain
 {
     public interface ILevelSource
     {
-        Task<PuzzleDefinition> GetNextPuzzleAsync();
+        UniTask<LevelToPlay> GetPuzzleByLevel(int levelId);
     }
 }

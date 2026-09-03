@@ -1,3 +1,4 @@
+using DuckDoku.Domain;
 using UnityEngine;
 using Zenject;
 
@@ -14,12 +15,22 @@ namespace DuckDoku.App
             Container.Bind<LevelCatalogAsset>().FromInstance(_levelCatalog).AsSingle();
             Container.Bind<PlayerSession>().AsSingle();
 
+            Container.Bind<IStateMachine>()
+                .To<SceneStateMachine>()
+                .FromMethod(_ => new SceneStateMachine(new BootSceneState()))
+                .AsSingle();
+
             Container.Bind<IDeviceIdProvider>().To<DeviceIdProvider>().AsSingle();
             Container.Bind<IServerTimeService>().To<ServerTimeService>().AsSingle();
 
             Container.Bind<IGuestAuthClient>().To<GuestAuthClient>().AsSingle();
             Container.Bind<IProfileClient>().To<ProfileClient>().AsSingle();
             Container.Bind<ITimeClient>().To<TimeClient>().AsSingle();
+            Container.Bind<ILevelsClient>().To<LevelsClient>().AsSingle();
+
+            Container.Bind<ILevelLauncher>().To<LevelLauncher>().AsSingle();
+            Container.Bind<ILevelMapSource>().To<LevelMapSource>().AsSingle();
+            Container.Bind<ILevelSessionService>().To<LevelSessionService>().AsSingle();
         }
     }
 }

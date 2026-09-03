@@ -3,7 +3,6 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Zenject;
 
 namespace DuckDoku.App
@@ -15,6 +14,7 @@ namespace DuckDoku.App
         private readonly PlayerSession _session;
         private readonly IProfileClient _profileClient;
         private readonly IServerTimeService _serverTimeService;
+        private readonly IStateMachine _sceneStateMachine;
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
@@ -23,13 +23,15 @@ namespace DuckDoku.App
             TMP_Text output,
             PlayerSession session,
             IProfileClient profileClient,
-            IServerTimeService serverTimeService)
+            IServerTimeService serverTimeService,
+            IStateMachine sceneStateMachine)
         {
             _authClient = authClient;
             _output = output;
             _session = session;
             _profileClient = profileClient;
             _serverTimeService = serverTimeService;
+            _sceneStateMachine = sceneStateMachine;
         }
 
         public void Initialize()
@@ -57,7 +59,7 @@ namespace DuckDoku.App
 
                 _output.text = $"Player: {profile.playerId}\nName: {name}\nTime: {_serverTimeService.UtcNow}";
 
-                SceneManager.LoadScene("Gameplay");
+                await _sceneStateMachine.TransitionTo(new MetaSceneState());
             }
             catch (Exception exception)
             {

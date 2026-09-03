@@ -2,7 +2,8 @@
     "name": "DuckDoku.Domain",
     "rootNamespace": "DuckDoku.Domain",
     "references": [
-        "GUID:a4e81ad3958f6874a9fe8bc2620fab6c"
+        "GUID:a4e81ad3958f6874a9fe8bc2620fab6c",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

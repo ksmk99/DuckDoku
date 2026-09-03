@@ -25,11 +25,13 @@ namespace DuckDoku.Domain
         }
 
         public event Action Changed;
-        public event Action Solved;
+        public event Action<Cell[]> Solved;
 
         public int Size => _definition.Size;
 
         public bool IsSolved { get; private set; }
+
+        public IReadOnlyList<Cell> Ducks => _ducks;
 
         public int RegionAt(int row, int column)
         {
@@ -63,7 +65,7 @@ namespace DuckDoku.Domain
 
             if (IsSolved)
             {
-                Solved?.Invoke();
+                Solved?.Invoke(_ducks.ToArray());
             }
         }
 

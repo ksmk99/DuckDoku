@@ -2,6 +2,7 @@
 using Cysharp.Threading.Tasks;
 using DuckDoku.Domain;
 using DuckDoku.Puzzle;
+using UnityEngine;
 using Zenject;
 
 namespace DuckDoku.Presentation
@@ -11,13 +12,19 @@ namespace DuckDoku.Presentation
         private readonly ILevelSource _levelSource;
         private readonly BoardView _boardView;
         private readonly GamePlayView _gameplayView;
+        private readonly ILevelLauncher _levelLauncher;
+        private readonly ILevelSessionService _levelSessionService;
 
         private BoardState _board;
+        private int _levelId;
+        private string _sessionId;
 
         public BoardPresenter(
             ILevelSource levelSource,
             BoardView boardView,
-            GamePlayView gameplayView)
+            GamePlayView gameplayView,
+            ILevelLauncher levelLauncher,
+            ILevelSessionService levelSessionService)
         {
             if (levelSource == null)
             {
@@ -34,9 +41,21 @@ namespace DuckDoku.Presentation
                 throw new ArgumentNullException(nameof(gameplayView));
             }
 
+            if (levelLauncher == null)
+            {
+                throw new ArgumentNullException(nameof(levelLauncher));
+            }
+
+            if (levelSessionService == null)
+            {
+                throw new ArgumentNullException(nameof(levelSessionService));
+            }
+
             _levelSource = levelSource;
             _boardView = boardView;
             _gameplayView = gameplayView;
+            _levelLauncher = levelLauncher;
+            _levelSessionService = levelSessionService;
         }
 
         public void Initialize()
@@ -60,11 +79,25 @@ namespace DuckDoku.Presentation
             _gameplayView.SetNextEnabled(false);
             _gameplayView.ShowVictory(false);
 
-            PuzzleDefinition definition = await _levelSource.GetNextPuzzleAsync();
+            int levelId = _levelLauncher.GetLevelId();
+
+            try
+            {
+                _sessionId = await _levelSessionService.StartLevelAsync(levelId);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                _levelLauncher.ReturnToMap();
+                return;
+            }
+
+            LevelToPlay levelToPlay = await _levelSource.GetPuzzleByLevel(levelId);
 
             DetachBoard();
 
-            _board = new BoardState(definition);
+            _levelId = levelToPlay.LevelId;
+            _board = new BoardState(levelToPlay.Puzzle);
             _board.Changed += OnBoardChanged;
             _board.Solved += OnBoardSolved;
 
@@ -94,7 +127,7 @@ namespace DuckDoku.Presentation
 
         private void OnNextRequested()
         {
-            LoadAsync().Forget();
+            _levelLauncher.ReturnToMap();
         }
 
         private void OnBoardChanged()
@@ -102,9 +135,23 @@ namespace DuckDoku.Presentation
             RedrawAll();
         }
 
-        private void OnBoardSolved()
+        private void OnBoardSolved(Cell[] cells)
         {
-            _gameplayView.ShowVictory(true);
+            CompleteAsync(cells).Forget();
+        }
+
+        private async UniTaskVoid CompleteAsync(Cell[] cells)
+        {
+            try
+            {
+                await _levelSessionService.CompleteLevelAsync(_levelId, _sessionId, cells);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+
+            _levelLauncher.ReturnToMap();
         }
 
         private void RedrawAll()

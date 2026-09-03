@@ -2,6 +2,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\shared\DuckDoku.Contracts\DuckDoku.Contracts.csproj" />
+      <ProjectReference Include="..\..\..\shared\DuckDoku.Puzzle\DuckDoku.Puzzle.csproj" />
     </ItemGroup>
 
     <ItemGroup>

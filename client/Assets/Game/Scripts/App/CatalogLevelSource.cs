@@ -1,5 +1,6 @@
 using System;
-using System.Threading.Tasks;
+using System.Linq;
+using Cysharp.Threading.Tasks;
 using DuckDoku.Domain;
 using DuckDoku.Puzzle;
 
@@ -8,25 +9,21 @@ namespace DuckDoku.App
     public class CatalogLevelSource : ILevelSource
     {
         private readonly LevelCatalogAsset _catalog;
-
-        private int _nextIndex;
-
+        
         public CatalogLevelSource(LevelCatalogAsset catalog)
         {
             _catalog = catalog;
         }
-
-        public Task<PuzzleDefinition> GetNextPuzzleAsync()
+        
+        public UniTask<LevelToPlay> GetPuzzleByLevel(int levelId)
         {
-            if (_nextIndex >= _catalog.Levels.Length)
+            LevelRecord record = _catalog.Levels.FirstOrDefault(level => level.Id == levelId);
+            if (record.Id == 0)
             {
-                throw new InvalidOperationException("Каталог уровней пройден целиком.");
+                throw new InvalidOperationException("Уровень не найден.");
             }
 
-            LevelRecord record = _catalog.Levels[_nextIndex];
-            _nextIndex++;
-
-            return Task.FromResult(ToDefinition(record));
+            return UniTask.FromResult(new LevelToPlay(record.Id, ToDefinition(record)));
         }
 
         private static PuzzleDefinition ToDefinition(LevelRecord record)
