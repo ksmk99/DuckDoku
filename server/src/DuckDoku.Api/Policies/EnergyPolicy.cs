@@ -5,7 +5,7 @@ public static class EnergyPolicy
     public const int Maximum = 5;
     public const int EntryCost = 1;
 
-    private static readonly TimeSpan RecoveryPeriod = TimeSpan.FromMinutes(20);
+    private static readonly TimeSpan RecoveryPeriod = TimeSpan.FromMinutes(1);
 
     public static (int Value, TimeSpan TimeToNext) GetCurrent(int storedValue, DateTime? updatedAt, DateTime now)
     {

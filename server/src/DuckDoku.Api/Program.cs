@@ -55,6 +55,8 @@ if (app.Environment.IsDevelopment())
 
     database.Database.EnsureDeleted();
     database.Database.EnsureCreated();
+
+    app.MapDevEndpoints();
 }
 else
 {
