@@ -11,17 +11,21 @@ namespace DuckDoku.App
 
         private readonly LevelCatalogAsset _catalog;
         private readonly ILevelsClient _levelsClient;
+        private readonly IEnergyService _energyService;
 
-        public LevelMapSource(LevelCatalogAsset catalog, ILevelsClient levelsClient)
+        public LevelMapSource(LevelCatalogAsset catalog, ILevelsClient levelsClient, IEnergyService energyService)
         {
             _catalog = catalog;
             _levelsClient = levelsClient;
+            _energyService = energyService;
         }
 
         public async UniTask<IReadOnlyList<LevelSummary>> GetLevelsAsync()
         {
             NextLevelResponse response = await _levelsClient.GetNextLevel();
             int nextLevelId = response.nextLevelId;
+
+            _energyService.Apply(response.energy, response.energyMax, response.energyRefillMs);
 
             LevelRecord[] levels = _catalog.Levels.OrderBy(record => record.Id).ToArray();
             var summaries = new LevelSummary[levels.Length];

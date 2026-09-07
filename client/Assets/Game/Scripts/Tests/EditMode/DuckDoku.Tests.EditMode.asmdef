@@ -5,7 +5,8 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "DuckDoku.App",
-        "DuckDoku.Domain"
+        "DuckDoku.Domain",
+        "DuckDoku.Presentation"
     ],
     "includePlatforms": [
         "Editor",

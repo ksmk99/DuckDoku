@@ -15,7 +15,9 @@ namespace DuckDoku.Presentation
         private CellView[] _cells;
         private int _size;
 
-        public event Action<int, int> CellClicked;
+        public event Action<int, int, int> CellPressed;
+        public event Action<int, int, int> CellEntered;
+        public event Action<int> CellReleased;
 
         public void Build(int size, int[] regions)
         {
@@ -45,14 +47,10 @@ namespace DuckDoku.Presentation
                 for (int column = 0; column < size; column++)
                 {
                     int index = row * size + column;
-                    int clickedRow = row;
-                    int clickedColumn = column;
 
                     CellView cell = Instantiate(_cellPrefab, _grid);
 
-                    cell.Setup(
-                        _palette[regions[index] % _palette.Length],
-                        () => CellClicked?.Invoke(clickedRow, clickedColumn));
+                    cell.Setup(this, row, column, _palette[regions[index] % _palette.Length]);
 
                     cell.SetBorders(
                         IsBorder(regions, size, row, column, -1, 0),
@@ -69,6 +67,21 @@ namespace DuckDoku.Presentation
         public void Show(int row, int column, CellState state, bool hasConflict)
         {
             _cells[row * _size + column].Show(state, hasConflict);
+        }
+
+        public void HandleCellPressed(int pointerId, int row, int column)
+        {
+            CellPressed?.Invoke(pointerId, row, column);
+        }
+
+        public void HandleCellEntered(int pointerId, int row, int column)
+        {
+            CellEntered?.Invoke(pointerId, row, column);
+        }
+
+        public void HandleCellReleased(int pointerId)
+        {
+            CellReleased?.Invoke(pointerId);
         }
 
         private void OnDestroy()

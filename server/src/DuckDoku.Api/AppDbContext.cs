@@ -15,6 +15,7 @@ namespace DuckDoku.Api
         
         public DbSet<LevelProgress> LevelProgress => Set<LevelProgress>();
         public DbSet<LevelSession> LevelSession => Set<LevelSession>();
+        public DbSet<EnergyState> Energy => Set<EnergyState>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -25,9 +26,19 @@ namespace DuckDoku.Api
             modelBuilder.Entity<LevelProgress>()
                 .HasIndex(progress => new { progress.PlayerId, progress.LevelId })
                 .IsUnique();
+            
+            modelBuilder.Entity<EnergyState>()
+                .HasKey(state => state.PlayerId);
         }
     }
 
+    public class EnergyState
+    {
+        public Guid PlayerId { get; set; }
+        public int Value { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+    }
+    
     public class Player
     {
         public Guid Id { get; set; }

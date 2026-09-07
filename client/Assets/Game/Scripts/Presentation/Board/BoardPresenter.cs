@@ -1,170 +1,125 @@
 ﻿using System;
-using Cysharp.Threading.Tasks;
 using DuckDoku.Domain;
-using DuckDoku.Puzzle;
 using UnityEngine;
 using Zenject;
 
 namespace DuckDoku.Presentation
 {
-    public class BoardPresenter : IInitializable, IDisposable
+    public class BoardPresenter : IInitializable, IDisposable, IBoardGestureTarget
     {
-        private readonly ILevelSource _levelSource;
         private readonly BoardView _boardView;
-        private readonly GamePlayView _gameplayView;
-        private readonly ILevelLauncher _levelLauncher;
-        private readonly ILevelSessionService _levelSessionService;
+        private readonly BoardGesture _gesture;
 
-        private BoardState _board;
-        private int _levelId;
-        private string _sessionId;
+        private BoardSession _session;
 
-        public BoardPresenter(
-            ILevelSource levelSource,
-            BoardView boardView,
-            GamePlayView gameplayView,
-            ILevelLauncher levelLauncher,
-            ILevelSessionService levelSessionService)
+        public BoardPresenter(BoardView boardView)
         {
-            if (levelSource == null)
-            {
-                throw new ArgumentNullException(nameof(levelSource));
-            }
-
             if (boardView == null)
             {
                 throw new ArgumentNullException(nameof(boardView));
             }
 
-            if (gameplayView == null)
-            {
-                throw new ArgumentNullException(nameof(gameplayView));
-            }
-
-            if (levelLauncher == null)
-            {
-                throw new ArgumentNullException(nameof(levelLauncher));
-            }
-
-            if (levelSessionService == null)
-            {
-                throw new ArgumentNullException(nameof(levelSessionService));
-            }
-
-            _levelSource = levelSource;
             _boardView = boardView;
-            _gameplayView = gameplayView;
-            _levelLauncher = levelLauncher;
-            _levelSessionService = levelSessionService;
+            _gesture = new BoardGesture(this);
         }
 
         public void Initialize()
         {
-            _boardView.CellClicked += OnCellClicked;
-            _gameplayView.NextRequested += OnNextRequested;
-
-            LoadAsync().Forget();
+            _boardView.CellPressed += OnCellPressed;
+            _boardView.CellEntered += OnCellEntered;
+            _boardView.CellReleased += OnCellReleased;
         }
 
         public void Dispose()
         {
-            _boardView.CellClicked -= OnCellClicked;
-            _gameplayView.NextRequested -= OnNextRequested;
+            _boardView.CellPressed -= OnCellPressed;
+            _boardView.CellEntered -= OnCellEntered;
+            _boardView.CellReleased -= OnCellReleased;
 
             DetachBoard();
         }
 
-        private async UniTaskVoid LoadAsync()
+        public void AttachBoard(BoardSession session)
         {
-            _gameplayView.SetNextEnabled(false);
-            _gameplayView.ShowVictory(false);
-
-            int levelId = _levelLauncher.GetLevelId();
-
-            try
+            if (session == null)
             {
-                _sessionId = await _levelSessionService.StartLevelAsync(levelId);
+                throw new ArgumentNullException(nameof(session));
             }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-                _levelLauncher.ReturnToMap();
-                return;
-            }
-
-            LevelToPlay levelToPlay = await _levelSource.GetPuzzleByLevel(levelId);
 
             DetachBoard();
 
-            _levelId = levelToPlay.LevelId;
-            _board = new BoardState(levelToPlay.Puzzle);
-            _board.Changed += OnBoardChanged;
-            _board.Solved += OnBoardSolved;
+            _session = session;
+            _session.Board.CellChanged += OnCellChanged;
 
-            _boardView.Build(_board.Size, CreateRegionMap(_board));
+            _boardView.Build(_session.Board.Size, CreateRegionMap(_session.Board));
 
             RedrawAll();
-
-            _gameplayView.SetNextEnabled(true);
         }
 
-        private void DetachBoard()
+        public void DetachBoard()
         {
-            if (_board == null)
+            if (_session == null)
             {
                 return;
             }
 
-            _board.Changed -= OnBoardChanged;
-            _board.Solved -= OnBoardSolved;
-            _board = null;
+            _session.Board.CellChanged -= OnCellChanged;
+            _session = null;
+
+            _gesture.Reset();
         }
 
-        private void OnCellClicked(int row, int column)
+        public bool CanEdit(int row, int column)
         {
-            _board?.Toggle(row, column);
+            return _session != null && _session.Board.CanEdit(row, column);
         }
 
-        private void OnNextRequested()
+        public bool IsMarked(int row, int column)
         {
-            _levelLauncher.ReturnToMap();
+            return _session != null && _session.Board.GetCellState(row, column) == CellState.Cross;
         }
 
-        private void OnBoardChanged()
+        public void Mark(int row, int column, bool marked)
         {
-            RedrawAll();
+            _session?.SetMark(row, column, marked);
         }
 
-        private void OnBoardSolved(Cell[] cells)
+        public void PlaceDuck(int row, int column)
         {
-            CompleteAsync(cells).Forget();
+            _session?.TryPlaceDuck(row, column);
         }
 
-        private async UniTaskVoid CompleteAsync(Cell[] cells)
+        private void OnCellPressed(int pointerId, int row, int column)
         {
-            try
-            {
-                await _levelSessionService.CompleteLevelAsync(_levelId, _sessionId, cells);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
-            }
+            _gesture.Press(pointerId, row, column, Time.unscaledTime);
+        }
 
-            _levelLauncher.ReturnToMap();
+        private void OnCellEntered(int pointerId, int row, int column)
+        {
+            _gesture.Enter(pointerId, row, column);
+        }
+
+        private void OnCellReleased(int pointerId)
+        {
+            _gesture.Release(pointerId, Time.unscaledTime);
+        }
+
+        private void OnCellChanged(int row, int column)
+        {
+            _boardView.Show(
+                row,
+                column,
+                _session.Board.GetCellState(row, column),
+                _session.Board.HasConflict(row, column));
         }
 
         private void RedrawAll()
         {
-            for (int row = 0; row < _board.Size; row++)
+            for (int row = 0; row < _session.Board.Size; row++)
             {
-                for (int column = 0; column < _board.Size; column++)
+                for (int column = 0; column < _session.Board.Size; column++)
                 {
-                    _boardView.Show(
-                        row,
-                        column,
-                        _board.GetCellState(row, column),
-                        _board.HasConflict(row, column));
+                    OnCellChanged(row, column);
                 }
             }
         }

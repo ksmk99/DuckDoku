@@ -482,7 +482,7 @@ GameObject:
   - component: {fileID: 1103489027}
   - component: {fileID: 1103489026}
   m_Layer: 5
-  m_Name: Result Text (TMP)
+  m_Name: Lives Count Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -504,8 +504,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 765.51025}
+  m_SizeDelta: {x: 0, y: -1531.021}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1103489026
 MonoBehaviour:
@@ -619,6 +619,7 @@ GameObject:
   - component: {fileID: 1146262530}
   - component: {fileID: 1146262529}
   - component: {fileID: 1146262531}
+  - component: {fileID: 1146262532}
   m_Layer: 5
   m_Name: Board
   m_TagString: Untagged
@@ -710,6 +711,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.AspectRatioFitter
   m_AspectMode: 1
   m_AspectRatio: 1
+--- !u!114 &1146262532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1146262527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7d3f8ca47e60e3469ae3ce62cd60fed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DuckDoku.Presentation::DuckDoku.Presentation.BoardInput
+  _grid: {fileID: 1146262528}
+  _layout: {fileID: 1146262529}
+  _doubleTapSeconds: 0.225
 --- !u!1 &1239923443
 GameObject:
   m_ObjectHideFlags: 0
@@ -909,7 +925,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1440775275
 RectTransform:
   m_ObjectHideFlags: 0
@@ -943,8 +959,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7c4ee6df5aa47dfb151d0a399c5b0e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DuckDoku.Presentation::DuckDoku.Presentation.GamePlayView
-  _victoryBanner: {fileID: 1440775274}
   _nextButton: {fileID: 1927699418}
+  _livesText: {fileID: 1103489026}
 --- !u!114 &1440775277
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -952,7 +968,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1440775274}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -1289,7 +1305,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1927699416
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1578,10 +1594,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DuckDoku.App::DuckDoku.App.GameplaySceneInstaller
   _boardView: {fileID: 1146262530}
+  _boardInput: {fileID: 0}
   _gameplayView: {fileID: 1440775276}
-  _settings:
-    _size: 10
-    _difficulty: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

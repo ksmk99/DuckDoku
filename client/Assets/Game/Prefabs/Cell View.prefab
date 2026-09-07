@@ -177,7 +177,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2654590295639019247}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
@@ -229,7 +229,6 @@ MonoBehaviour:
   _background: {fileID: 7241197660564471317}
   _content: {fileID: 7617652262602686262}
   _conflictFrame: {fileID: 6470541920932709024}
-  _button: {fileID: 3050988160750016192}
   _crossSprite: {fileID: 21300000, guid: 7a7bf505b1b7f4d4e8ce85370deaeef2, type: 3}
   _duckSprite: {fileID: 21300000, guid: 278383918ba0fc9418e28d7378e3eb50, type: 3}
   _borderTop: {fileID: 7309308400273039976}
@@ -238,6 +237,8 @@ MonoBehaviour:
   _borderRight: {fileID: 8511468513819660664}
   _normalColor: {r: 1, g: 1, b: 1, a: 0}
   _conflictColor: {r: 1, g: 0, b: 0, a: 0.34901962}
+  _markColor: {r: 1, g: 1, b: 1, a: 1}
+  _blockedColor: {r: 0.35, g: 0.35, b: 0.35, a: 1}
 --- !u!1 &3220323450290590266
 GameObject:
   m_ObjectHideFlags: 0

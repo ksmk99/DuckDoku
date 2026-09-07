@@ -16,7 +16,14 @@ namespace DuckDoku.App
             Container.BindInstance(_gameplayView);
 
             Container.Bind<ILevelSource>().To<CatalogLevelSource>().AsSingle();
-            Container.BindInterfacesTo<BoardPresenter>().AsSingle();
+            Container.Bind<IBoardSessionFactory>().To<BoardSessionFactory>().AsSingle();
+
+            Container.BindInterfacesAndSelfTo<BoardPresenter>().AsSingle();
+            Container.BindInterfacesAndSelfTo<GameplayCoordinator>().AsSingle();
+
+#if UNITY_EDITOR
+            Container.BindInterfacesAndSelfTo<DevAutoSolveHotkey>().AsSingle();
+#endif
         }
     }
 }

@@ -5,7 +5,31 @@ using Scalar.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddJsonFile("appsettings.Development.local.json", optional: true);
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddJsonFile("appsettings.Development.local.json", optional: true);
+}
+
+string? port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
+const string CorsPolicyName = "ClientOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicyName, policy =>
+    {
+        string[] allowedOrigins = (builder.Configuration["AllowedOrigins"] ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
@@ -22,18 +46,29 @@ builder.Services.AddHostedService<LevelCatalogInitializer>();
 WebApplication app = builder.Build();
 
 
-if (app.Environment.IsDevelopment())                                              
-{                                                                                 
-    using IServiceScope scope = app.Services.CreateScope();                       
-                                                                                    
-    AppDbContext database =                                                       
-        scope.ServiceProvider.GetRequiredService<AppDbContext>();                         
-                                                                                    
-    database.Database.EnsureDeleted();                                            
-    database.Database.EnsureCreated();                                            
-}  
+if (app.Environment.IsDevelopment())
+{
+    using IServiceScope scope = app.Services.CreateScope();
+
+    AppDbContext database =
+        scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    database.Database.EnsureDeleted();
+    database.Database.EnsureCreated();
+}
+else
+{
+    using IServiceScope scope = app.Services.CreateScope();
+
+    AppDbContext database =
+        scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    database.Database.EnsureCreated();
+}
 
 app.UseExceptionHandler();
+
+app.UseCors(CorsPolicyName);
 
 app.MapOpenApi();
 app.MapScalarApiReference();

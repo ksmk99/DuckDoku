@@ -22,6 +22,7 @@ namespace DuckDoku.App
 
             Container.Bind<IDeviceIdProvider>().To<DeviceIdProvider>().AsSingle();
             Container.Bind<IServerTimeService>().To<ServerTimeService>().AsSingle();
+            Container.Bind<IEnergyService>().To<EnergyService>().AsSingle();
 
             Container.Bind<IGuestAuthClient>().To<GuestAuthClient>().AsSingle();
             Container.Bind<IProfileClient>().To<ProfileClient>().AsSingle();
@@ -31,6 +32,7 @@ namespace DuckDoku.App
             Container.Bind<ILevelLauncher>().To<LevelLauncher>().AsSingle();
             Container.Bind<ILevelMapSource>().To<LevelMapSource>().AsSingle();
             Container.Bind<ILevelSessionService>().To<LevelSessionService>().AsSingle();
+            Container.Bind<ILevelFinishContext>().To<LevelFinishContext>().AsSingle();
         }
     }
 }

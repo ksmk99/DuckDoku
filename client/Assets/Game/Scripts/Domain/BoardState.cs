@@ -24,7 +24,7 @@ namespace DuckDoku.Domain
             _ducks = new List<Cell>(definition.Size);
         }
 
-        public event Action Changed;
+        public event Action<int, int> CellChanged;
         public event Action<Cell[]> Solved;
 
         public int Size => _definition.Size;
@@ -37,7 +37,7 @@ namespace DuckDoku.Domain
         {
             return _definition.RegionAt(row, column);
         }
-        
+
         public CellState GetCellState(int row, int column)
         {
             return _cells[Index(row, column)];
@@ -48,25 +48,65 @@ namespace DuckDoku.Domain
             return _conflicts[Index(row, column)];
         }
 
-        public void Toggle(int row, int column)
+        public bool CanEdit(int row, int column)
+        {
+            return !IsSolved && !_cells[Index(row, column)].IsLocked();
+        }
+
+        public void SetMark(int row, int column, bool marked)
         {
             int index = Index(row, column);
 
-            if (IsSolved)
+            if (!CanEdit(row, column))
             {
                 return;
             }
 
-            _cells[index] = _cells[index].Next();
+            CellState next = marked ? CellState.Cross : CellState.Empty;
+
+            if (_cells[index] == next)
+            {
+                return;
+            }
+
+            _cells[index] = next;
+
+            CellChanged?.Invoke(row, column);
+        }
+
+        public void PlaceDuck(int row, int column)
+        {
+            int index = Index(row, column);
+
+            if (!CanEdit(row, column))
+            {
+                return;
+            }
+
+            _cells[index] = CellState.Duck;
 
             Refresh();
 
-            Changed?.Invoke();
+            CellChanged?.Invoke(row, column);
 
             if (IsSolved)
             {
                 Solved?.Invoke(_ducks.ToArray());
             }
+        }
+
+        public void Block(int row, int column)
+        {
+            int index = Index(row, column);
+
+            if (!CanEdit(row, column))
+            {
+                return;
+            }
+
+            _cells[index] = CellState.Blocked;
+
+            CellChanged?.Invoke(row, column);
         }
 
         private void Refresh()

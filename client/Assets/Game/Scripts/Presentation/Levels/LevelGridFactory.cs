@@ -12,16 +12,19 @@ namespace DuckDoku.Presentation
         private readonly LevelFactoryGridData _data;
         private readonly ILevelMapSource _levelMapSource;
         private readonly ILevelLauncher _levelLauncher;
+        private readonly IEnergyService _energyService;
 
         private LevelPresenter[] _levels;
 
-        public LevelGridFactory(LevelFactoryGridData data, 
+        public LevelGridFactory(LevelFactoryGridData data,
             ILevelMapSource  levelMapSource,
-            ILevelLauncher levelLauncher)
+            ILevelLauncher levelLauncher,
+            IEnergyService energyService)
         {
             _data = data;
             _levelMapSource = levelMapSource;
             _levelLauncher = levelLauncher;
+            _energyService = energyService;
         }
 
         public void Initialize()
@@ -46,7 +49,7 @@ namespace DuckDoku.Presentation
 
                     view.Setup(levelsStates[i].LevelId, levelsStates[i].Status);
                     var model = new LevelModel(levelsStates[i]);
-                    var presenter = new LevelPresenter(view, model, _levelLauncher);
+                    var presenter = new LevelPresenter(view, model, _levelLauncher, _energyService);
 
                     _levels[i] = presenter;
             }

@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/*.user
+**/appsettings.*.local.json
+.git/
+artifacts/
+client/
+docs/

@@ -9,5 +9,7 @@ namespace DuckDoku.App
         event Action<ISceneState> Changed;
         ISceneState CurrentState { get; }
         UniTask TransitionTo(ISceneState nextState);
+        UniTask LoadAdditive(ISceneState overlayState);
+        UniTask UnloadAdditive(ISceneState overlayState);
     }
 }
