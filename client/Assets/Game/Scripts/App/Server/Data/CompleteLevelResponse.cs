@@ -7,5 +7,7 @@ namespace DuckDoku.App
     {
         public long duration;
         public int stars;
+        public int balance;
+        public int coinsEarned;
     }
 }

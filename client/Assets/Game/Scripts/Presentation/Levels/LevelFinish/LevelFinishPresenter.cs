@@ -37,12 +37,12 @@ namespace DuckDoku.Presentation
 
         public void Initialize()
         {
-            _view.RetryRequested += OnRetryRequested;
+            _view.ContinueRequested += OnContinueRequested;
             _view.NextRequested += OnNextRequested;
 
             if (_finishContext.Outcome == LevelOutcome.Victory)
             {
-                _view.ShowVictory(_finishContext.Stars);
+                _view.ShowVictory(_finishContext.Stars, _finishContext.Coins);
             }
             else
             {
@@ -52,13 +52,13 @@ namespace DuckDoku.Presentation
 
         public void Dispose()
         {
-            _view.RetryRequested -= OnRetryRequested;
+            _view.ContinueRequested -= OnContinueRequested;
             _view.NextRequested -= OnNextRequested;
         }
 
-        private void OnRetryRequested()
+        private void OnContinueRequested()
         {
-            _finishContext.RequestRetry();
+            _levelLauncher.ReturnToMap();
         }
 
         private void OnNextRequested()

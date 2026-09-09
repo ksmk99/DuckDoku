@@ -11,18 +11,17 @@ namespace DuckDoku.Presentation
 
         public void SetValue(int value, int max)
         {
-            _valueText.text = $"{value}/{max}";
+            _valueText.text = $"{value}";
         }
 
         public void SetCountdown(TimeSpan? remaining)
         {
             if (remaining is null)
             {
-                _countdownText.gameObject.SetActive(false);
+                _countdownText.text = "max";
                 return;
             }
-
-            _countdownText.gameObject.SetActive(true);
+            
             _countdownText.text = remaining.Value.ToString(@"mm\:ss");
         }
 

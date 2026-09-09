@@ -13,5 +13,7 @@ namespace DuckDoku.App
 
         UniTask<CompleteLevelResponse> CompleteLevel(int levelId, string sessionId,
             IReadOnlyList<Cell> placement, CancellationToken cancellationToken = default);
+
+        UniTask<UseHintResponse> UseHint(int levelId, string sessionId, CancellationToken cancellationToken = default);
     }
 }

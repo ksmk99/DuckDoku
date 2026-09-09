@@ -1,5 +1,49 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &463262188104351348
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2879246530056616617}
+  - component: {fileID: 499321635890973423}
+  m_Layer: 0
+  m_Name: Currency Installer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2879246530056616617
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 463262188104351348}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8735263880361032963}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &499321635890973423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 463262188104351348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae048ecd66bed2242beabb72afa26456, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DuckDoku.App::DuckDoku.App.CurrencyInstaller
 --- !u!1 &1719790286853846494
 GameObject:
   m_ObjectHideFlags: 0
@@ -114,6 +158,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 724cdc9445f74c246930494dd688dd08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DuckDoku.Presentation::DuckDoku.Presentation.PopupRoot
+--- !u!1 &2168642215680187490
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 130372815990557819}
+  - component: {fileID: 1135266109000786050}
+  m_Layer: 0
+  m_Name: Hint Wallet Installer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &130372815990557819
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2168642215680187490}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8735263880361032963}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1135266109000786050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2168642215680187490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43bb567ded08d9749bcc41d24775af3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DuckDoku.App::DuckDoku.App.HintWalletInstaller
 --- !u!1 &2337844315388086842
 GameObject:
   m_ObjectHideFlags: 0
@@ -321,6 +409,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 5134961171436766444}
   - {fileID: 7954717439770872393}
   - {fileID: 6857892440019510224}
   - {fileID: 709417179106992298}
@@ -328,7 +417,8 @@ Transform:
   - {fileID: 8815775326041495138}
   - {fileID: 3540245291253591980}
   - {fileID: 2486026265123057308}
-  - {fileID: 5134961171436766444}
+  - {fileID: 2879246530056616617}
+  - {fileID: 130372815990557819}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6507364687781697413
@@ -352,6 +442,8 @@ MonoBehaviour:
   - {fileID: 3992481215037360040}
   - {fileID: 9105009054567128178}
   - {fileID: 2410974649025654968}
+  - {fileID: 499321635890973423}
+  - {fileID: 1135266109000786050}
   _installerPrefabs: []
   _parentNewObjectsUnderContext: 1
   _editorReflectionBakingCoverageMode: 0

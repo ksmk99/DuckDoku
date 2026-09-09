@@ -6,16 +6,23 @@ using Zenject;
 
 namespace DuckDoku.Presentation
 {
-    public class BoardPresenter : IInitializable, IDisposable, IBoardGestureTarget
+    public class BoardPresenter : IInitializable, IDisposable, ITickable, IBoardGestureTarget, IBoardEditability
     {
         private readonly BoardView _boardView;
         private readonly CellFeedbackConfig _feedback;
+        private readonly BoardInputConfig _inputConfig;
+        private readonly HintService _hintService;
         private readonly BoardGesture _gesture;
 
         private BoardSession _session;
         private Action<Cell[]> _onSolved;
+        private Cell? _highlightedHintCell;
 
-        public BoardPresenter(BoardView boardView, CellFeedbackConfig feedback)
+        public BoardPresenter(
+            BoardView boardView,
+            CellFeedbackConfig feedback,
+            BoardInputConfig inputConfig,
+            HintService hintService)
         {
             if (boardView == null)
             {
@@ -27,9 +34,21 @@ namespace DuckDoku.Presentation
                 throw new ArgumentNullException(nameof(feedback));
             }
 
+            if (inputConfig == null)
+            {
+                throw new ArgumentNullException(nameof(inputConfig));
+            }
+
+            if (hintService == null)
+            {
+                throw new ArgumentNullException(nameof(hintService));
+            }
+
             _boardView = boardView;
             _feedback = feedback;
-            _gesture = new BoardGesture(this);
+            _inputConfig = inputConfig;
+            _hintService = hintService;
+            _gesture = new BoardGesture(this, _inputConfig.DoubleTapSeconds, _inputConfig.StaleGestureTimeoutSeconds);
         }
 
         public void Initialize()
@@ -37,6 +56,8 @@ namespace DuckDoku.Presentation
             _boardView.CellPressed += OnCellPressed;
             _boardView.CellEntered += OnCellEntered;
             _boardView.CellReleased += OnCellReleased;
+
+            _hintService.Changed += OnHintChanged;
         }
 
         public void Dispose()
@@ -44,6 +65,8 @@ namespace DuckDoku.Presentation
             _boardView.CellPressed -= OnCellPressed;
             _boardView.CellEntered -= OnCellEntered;
             _boardView.CellReleased -= OnCellReleased;
+
+            _hintService.Changed -= OnHintChanged;
 
             DetachBoard();
         }
@@ -83,6 +106,7 @@ namespace DuckDoku.Presentation
             _onSolved = null;
 
             _session = null;
+            _highlightedHintCell = null;
 
             _gesture.Reset();
         }
@@ -109,12 +133,23 @@ namespace DuckDoku.Presentation
                 return;
             }
 
+            if (!_session.Board.CanEdit(row, column))
+            {
+                _boardView.PlayBlocked(row, column);
+                return;
+            }
+
             BoardState board = _session.Board;
 
             if (_session.TryPlaceDuck(row, column))
             {
                 PlayCorrectPlacementFeedback(row, column, board);
             }
+        }
+
+        public void Tick()
+        {
+            _gesture.Tick(Time.unscaledTime);
         }
 
         private void OnCellPressed(int pointerId, int row, int column)
@@ -124,7 +159,7 @@ namespace DuckDoku.Presentation
 
         private void OnCellEntered(int pointerId, int row, int column)
         {
-            _gesture.Enter(pointerId, row, column);
+            _gesture.Enter(pointerId, row, column, Time.unscaledTime);
         }
 
         private void OnCellReleased(int pointerId)
@@ -142,6 +177,26 @@ namespace DuckDoku.Presentation
             {
                 _boardView.PlayCrossPainted(row, column);
             }
+        }
+
+        private void OnHintChanged()
+        {
+            if (_highlightedHintCell.HasValue)
+            {
+                Cell previous = _highlightedHintCell.Value;
+                _boardView.PlayHintAccentClear(previous.Row, previous.Column);
+                _highlightedHintCell = null;
+            }
+
+            Cell? hint = _hintService.ActiveHint;
+
+            if (hint == null)
+            {
+                return;
+            }
+
+            _highlightedHintCell = hint.Value;
+            _boardView.PlayHintAccent(hint.Value.Row, hint.Value.Column);
         }
 
         private void OnDuckRejected(Cell cell)

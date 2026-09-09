@@ -17,7 +17,7 @@ namespace DuckDoku.App
         {
             if (!_energyService.HasEnough(EnergyPolicy.EntryCost))
             {
-                _energyService.NotifyDenied();
+                _energyService.NotifyDenied(EnergyPolicy.EntryCost);
                 return false;
             }
 

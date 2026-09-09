@@ -7,6 +7,8 @@ namespace DuckDoku.App
     public interface IDevClient
     {
         UniTask<DevEnergyResponse> GrantMaxEnergy(CancellationToken cancellationToken = default);
+
+        UniTask<DevCurrencyResponse> GrantCurrency(CancellationToken cancellationToken = default);
     }
 }
 #endif

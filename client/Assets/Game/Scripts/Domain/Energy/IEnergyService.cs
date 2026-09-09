@@ -8,12 +8,12 @@ namespace DuckDoku.Domain
         TimeSpan? TimeUntilNext { get; }
 
         event Action Changed;
-        event Action Denied;
+        event Action<int> Denied;
 
         void Apply(int value, int max, long refillMs);
 
         bool HasEnough(int cost);
 
-        void NotifyDenied();
+        void NotifyDenied(int cost);
     }
 }

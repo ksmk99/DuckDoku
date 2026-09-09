@@ -4,13 +4,13 @@ namespace DuckDoku.Presentation
 {
     public class BoardGesture
     {
-        public const float DefaultDoubleTapSeconds = 0.22f;
-
         private readonly IBoardGestureTarget _target;
         private readonly float _doubleTapSeconds;
+        private readonly float _staleTimeoutSeconds;
 
         private bool _isActive;
         private int _pointerId;
+        private float _lastActivityTime;
 
         private bool _isStartPainted;
         private bool _isDoubleTapPending;
@@ -28,7 +28,7 @@ namespace DuckDoku.Presentation
         private int _tapColumn = -1;
         private float _tapTime = float.NegativeInfinity;
 
-        public BoardGesture(IBoardGestureTarget target, float doubleTapSeconds = DefaultDoubleTapSeconds)
+        public BoardGesture(IBoardGestureTarget target, float doubleTapSeconds, float staleTimeoutSeconds)
         {
             if (target == null)
             {
@@ -37,6 +37,7 @@ namespace DuckDoku.Presentation
 
             _target = target;
             _doubleTapSeconds = doubleTapSeconds;
+            _staleTimeoutSeconds = staleTimeoutSeconds;
         }
 
         public void Press(int pointerId, int row, int column, float time)
@@ -48,6 +49,7 @@ namespace DuckDoku.Presentation
 
             _isActive = true;
             _pointerId = pointerId;
+            _lastActivityTime = time;
 
             _hasMoved = false;
             _hasPaintMode = false;
@@ -73,7 +75,7 @@ namespace DuckDoku.Presentation
             _isStartPainted = true;
         }
 
-        public void Enter(int pointerId, int row, int column)
+        public void Enter(int pointerId, int row, int column, float time = 0f)
         {
             if (!_isActive || pointerId != _pointerId)
             {
@@ -85,6 +87,7 @@ namespace DuckDoku.Presentation
                 return;
             }
 
+            _lastActivityTime = time;
             _hasMoved = true;
             _isDoubleTapPending = false;
 
@@ -129,6 +132,27 @@ namespace DuckDoku.Presentation
 
         public void Reset()
         {
+            _isActive = false;
+            _isStartPainted = false;
+            _isDoubleTapPending = false;
+            _hasMoved = false;
+            _hasPaintMode = false;
+
+            ForgetTap();
+        }
+
+        public void Tick(float time)
+        {
+            if (!_isActive)
+            {
+                return;
+            }
+
+            if (time - _lastActivityTime < _staleTimeoutSeconds)
+            {
+                return;
+            }
+
             _isActive = false;
             _isStartPainted = false;
             _isDoubleTapPending = false;

@@ -35,6 +35,7 @@ namespace DuckDoku.App
                 throw new Exception("Not authenticated: call guest login first.");
             }
 
+            request.timeout = _serverConfig.RequestTimeoutSeconds;
             request.SetRequestHeader("Authorization", "Ducky " + _session.Token);
 
             UnityWebRequest result = await request.SendWebRequest().WithCancellation(cancellationToken);

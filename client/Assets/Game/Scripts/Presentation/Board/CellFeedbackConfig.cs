@@ -28,6 +28,19 @@ namespace DuckDoku.Presentation
         [SerializeField] private float _waveSettleDuration = 0.18f;
         [SerializeField] private float _groupWaveDelayStep = 0.03f;
 
+        [Header("Подсказка")]
+        [SerializeField] private Color _hintAccentColor = new Color(1f, 0.85f, 0.3f, 0.85f);
+        [SerializeField] private float _hintAccentPulseDuration = 0.5f;
+
+        [Header("Наведение")]
+        [SerializeField] private Color _hoverColor = new Color(1f, 1f, 1f, 0.12f);
+        [SerializeField] private float _hoverFadeDuration = 0.12f;
+
+        [Header("Недоступно")]
+        [SerializeField] private float _blockedShakeDuration = 0.10f;
+        [SerializeField] private int _blockedShakeVibrato = 8;
+        [SerializeField] private Vector3 _blockedShakeStrength = new Vector3(3f, 0f, 0f);
+
         public float CrossPulseDuration => _crossPulseDuration;
 
         public float AnticipationScale => _anticipationScale;
@@ -46,5 +59,15 @@ namespace DuckDoku.Presentation
         public float WaveFlashDuration => _waveFlashDuration;
         public float WaveSettleDuration => _waveSettleDuration;
         public float GroupWaveDelayStep => _groupWaveDelayStep;
+
+        public Color HintAccentColor => _hintAccentColor;
+        public float HintAccentPulseDuration => _hintAccentPulseDuration;
+
+        public Color HoverColor => _hoverColor;
+        public float HoverFadeDuration => _hoverFadeDuration;
+
+        public float BlockedShakeDuration => _blockedShakeDuration;
+        public int BlockedShakeVibrato => _blockedShakeVibrato;
+        public Vector3 BlockedShakeStrength => _blockedShakeStrength;
     }
 }

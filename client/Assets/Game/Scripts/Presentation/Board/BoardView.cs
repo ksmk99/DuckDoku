@@ -18,6 +18,8 @@ namespace DuckDoku.Presentation
         public event Action<int, int, int> CellPressed;
         public event Action<int, int, int> CellEntered;
         public event Action<int> CellReleased;
+        public event Action<int, int> CellHoverEntered;
+        public event Action<int, int> CellHoverExited;
 
         public void Build(int size, int[] regions, CellFeedbackConfig feedback)
         {
@@ -84,9 +86,34 @@ namespace DuckDoku.Presentation
             _cells[row * _size + column].PlayWrongPlacement();
         }
 
+        public void PlayBlocked(int row, int column)
+        {
+            _cells[row * _size + column].PlayBlocked();
+        }
+
+        public void PlayHoverEnter(int row, int column)
+        {
+            _cells[row * _size + column].PlayHoverEnter();
+        }
+
+        public void PlayHoverExit(int row, int column)
+        {
+            _cells[row * _size + column].PlayHoverExit();
+        }
+
         public void PlayGroupWave(int row, int column, float delay)
         {
             _cells[row * _size + column].PlayGroupWave(delay);
+        }
+
+        public void PlayHintAccent(int row, int column)
+        {
+            _cells[row * _size + column].PlayHintAccent();
+        }
+
+        public void PlayHintAccentClear(int row, int column)
+        {
+            _cells[row * _size + column].PlayHintAccentClear();
         }
 
         public void HandleCellPressed(int pointerId, int row, int column)
@@ -102,6 +129,16 @@ namespace DuckDoku.Presentation
         public void HandleCellReleased(int pointerId)
         {
             CellReleased?.Invoke(pointerId);
+        }
+
+        public void HandleCellHoverEnter(int row, int column)
+        {
+            CellHoverEntered?.Invoke(row, column);
+        }
+
+        public void HandleCellHoverExit(int row, int column)
+        {
+            CellHoverExited?.Invoke(row, column);
         }
 
         private void OnDestroy()

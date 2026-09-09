@@ -15,6 +15,11 @@ namespace DuckDoku.Presentation
         [SerializeField] private float _starPopDuration = 0.3f;
         [SerializeField] private float _starDelayStep = 0.15f;
 
+        [Header("Монеты")]
+        [SerializeField] private float _coinsRevealDelayAfterStars = 0.25f;
+        [SerializeField] private float _coinsPopDuration = 0.25f;
+        [SerializeField] private float _coinsCountDuration = 0.6f;
+
         public float VictoryRevealDuration => _victoryRevealDuration;
         public float DefeatRevealDuration => _defeatRevealDuration;
 
@@ -22,5 +27,9 @@ namespace DuckDoku.Presentation
         public Sprite UnearnedSprite => _unearnedSprite;
         public float StarPopDuration => _starPopDuration;
         public float StarDelayStep => _starDelayStep;
+
+        public float CoinsRevealDelayAfterStars => _coinsRevealDelayAfterStars;
+        public float CoinsPopDuration => _coinsPopDuration;
+        public float CoinsCountDuration => _coinsCountDuration;
     }
 }

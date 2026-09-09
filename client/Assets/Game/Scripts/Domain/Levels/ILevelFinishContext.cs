@@ -7,10 +7,11 @@ namespace DuckDoku.Domain
         LevelOutcome Outcome { get; }
         int Stars { get; }
         long DurationMs { get; }
+        int Coins { get; }
 
         event Action RetryRequested;
 
-        void SetResult(LevelOutcome outcome, int stars, long durationMs);
+        void SetResult(LevelOutcome outcome, int stars, long durationMs, int coins);
         void RequestRetry();
     }
 }

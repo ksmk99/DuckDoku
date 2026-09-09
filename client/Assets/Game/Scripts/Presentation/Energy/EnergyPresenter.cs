@@ -74,7 +74,7 @@ namespace DuckDoku.Presentation
             _view.SetCountdown(_energyService.TimeUntilNext);
         }
 
-        private void OnDenied()
+        private void OnDenied(int cost)
         {
             _view.Pulse();
             ShowPopupAsync().Forget();
@@ -84,8 +84,7 @@ namespace DuckDoku.Presentation
         {
             EnergyPopupView popup = GameObject.Instantiate(_popupPrefab, _popupRoot.transform);
             EnergySnapshot snapshot = _energyService.Current;
-
-            popup.SetValue(snapshot.Value, snapshot.Max);
+            
             popup.SetCountdown(_energyService.TimeUntilNext);
 
             await _popupService.Show(popup);

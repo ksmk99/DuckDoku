@@ -2,6 +2,7 @@ using DG.Tweening;
 using DuckDoku.Domain;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace DuckDoku.Presentation
@@ -9,11 +10,15 @@ namespace DuckDoku.Presentation
     public class CellView : MonoBehaviour,
         IPointerDownHandler,
         IPointerEnterHandler,
+        IPointerExitHandler,
         IPointerUpHandler
     {
         [SerializeField] private Image _background;
         [SerializeField] private Image _content;
         [SerializeField] private Image _conflictFrame;
+        [FormerlySerializedAs("_dimOverlay")]
+        [SerializeField] private Image _hintOverlay;
+        [SerializeField] private Image _hoverOverlay;
 
         [SerializeField] private Sprite _crossSprite;
         [SerializeField] private Sprite _duckSprite;
@@ -43,6 +48,17 @@ namespace DuckDoku.Presentation
             _feedback = feedback;
 
             _background.color = regionColor;
+
+            Color hintColor = _feedback.HintAccentColor;
+            _hintOverlay.color = new Color(hintColor.r, hintColor.g, hintColor.b, 0f);
+            _hintOverlay.raycastTarget = false;
+
+            if (_hoverOverlay != null)
+            {
+                Color hoverColor = _feedback.HoverColor;
+                _hoverOverlay.color = new Color(hoverColor.r, hoverColor.g, hoverColor.b, 0f);
+                _hoverOverlay.raycastTarget = false;
+            }
         }
 
         public void SetBorders(bool top, bool bottom, bool left, bool right)
@@ -128,18 +144,69 @@ namespace DuckDoku.Presentation
             _background.DOColor(Darken(_regionColor, _feedback.BlockedDarkenFactor), _feedback.BackgroundTintDuration).SetEase(Ease.OutQuad);
         }
 
+        public void PlayHintAccent()
+        {
+            _hintOverlay.DOKill();
+
+            _hintOverlay.color = new Color(_hintOverlay.color.r, _hintOverlay.color.g, _hintOverlay.color.b, 0f);
+
+            _hintOverlay.DOFade(_feedback.HintAccentColor.a, _feedback.HintAccentPulseDuration)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(-1, LoopType.Yoyo);
+        }
+
+        public void PlayHintAccentClear()
+        {
+            _hintOverlay.DOKill();
+            _hintOverlay.DOFade(0f, _feedback.HintAccentPulseDuration).SetEase(Ease.OutQuad);
+        }
+
+        public void PlayHoverEnter()
+        {
+            if (_hoverOverlay == null)
+            {
+                return;
+            }
+
+            _hoverOverlay.DOKill();
+            _hoverOverlay.DOFade(_feedback.HoverColor.a, _feedback.HoverFadeDuration).SetEase(Ease.OutQuad);
+        }
+
+        public void PlayHoverExit()
+        {
+            if (_hoverOverlay == null)
+            {
+                return;
+            }
+
+            _hoverOverlay.DOKill();
+            _hoverOverlay.DOFade(0f, _feedback.HoverFadeDuration).SetEase(Ease.OutQuad);
+        }
+
+        public void PlayBlocked()
+        {
+            _content.transform.DOKill();
+
+            _content.transform.DOShakePosition(
+                _feedback.BlockedShakeDuration,
+                _feedback.BlockedShakeStrength,
+                _feedback.BlockedShakeVibrato);
+        }
+
         public void Release()
         {
             _content.transform.DOKill();
             _content.DOKill();
             _background.DOKill();
+            _hintOverlay.DOKill();
+            _hoverOverlay?.DOKill();
 
             _board = null;
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (_board == null)
+            if (_board == null || eventData.button != PointerEventData.InputButton.Left)
             {
                 return;
             }
@@ -149,12 +216,27 @@ namespace DuckDoku.Presentation
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (_board == null || eventData.pointerPress == null)
+            if (_board == null)
             {
                 return;
             }
 
-            _board.HandleCellEntered(eventData.pointerId, _row, _column);
+            _board.HandleCellHoverEnter(_row, _column);
+
+            if (eventData.pointerPress != null)
+            {
+                _board.HandleCellEntered(eventData.pointerId, _row, _column);
+            }
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (_board == null)
+            {
+                return;
+            }
+
+            _board.HandleCellHoverExit(_row, _column);
         }
 
         public void OnPointerUp(PointerEventData eventData)

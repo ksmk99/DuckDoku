@@ -1,6 +1,7 @@
 using System;
 using Cysharp.Threading.Tasks;
 using DuckDoku.Domain;
+using UnityEngine;
 using Zenject;
 
 namespace DuckDoku.Presentation
@@ -23,6 +24,8 @@ namespace DuckDoku.Presentation
         public void Initialize()
         {
             _view.PlayClicked += OnPlayClicked;
+
+            PrefetchEnergyAsync().Forget();
         }
 
         public void Dispose()
@@ -41,6 +44,18 @@ namespace DuckDoku.Presentation
             PlayAsync().Forget();
         }
 
+        private async UniTaskVoid PrefetchEnergyAsync()
+        {
+            try
+            {
+                await _levelMapSource.GetNextLevelIdAsync();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"MainMenuPresenter: failed to prefetch energy: {exception.Message}");
+            }
+        }
+
         private async UniTaskVoid PlayAsync()
         {
             try
@@ -57,6 +72,11 @@ namespace DuckDoku.Presentation
                 {
                     _view.PlayDenied();
                 }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                _view.PlayDenied();
             }
             finally
             {

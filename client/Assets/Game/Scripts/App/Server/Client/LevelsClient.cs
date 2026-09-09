@@ -13,6 +13,7 @@ namespace DuckDoku.App
         private const string NextLevelPath = "/api/v1/levels/next";
         private const string StartLevelPath = "/api/v1/levels/{0}/start";
         private const string CompleteLevelPath = "/api/v1/levels/{0}/complete";
+        private const string UseHintPath = "/api/v1/levels/{0}/hint";
 
         private readonly ServerConfig _serverConfig;
         private readonly PlayerSession _session;
@@ -78,6 +79,18 @@ namespace DuckDoku.App
             }
         }
 
+        public async UniTask<UseHintResponse> UseHint(int levelId, string sessionId, CancellationToken cancellationToken = default)
+        {
+            string body = JsonUtility.ToJson(new UseHintRequest { sessionId = sessionId });
+            string path = string.Format(UseHintPath, levelId);
+
+            using (UnityWebRequest request = UnityWebRequest.Post(_serverConfig.BaseUrl + path, body, "application/json"))
+            {
+                string json = await SendAsync(request, cancellationToken);
+                return JsonUtility.FromJson<UseHintResponse>(json);
+            }
+        }
+
         private async UniTask<string> SendAsync(UnityWebRequest request, CancellationToken cancellationToken)
         {
             if (!_session.IsAuthenticated)
@@ -102,6 +115,12 @@ namespace DuckDoku.App
         {
             public string sessionId;
             public SerializedCell[] placement;
+        }
+
+        [Serializable]
+        private class UseHintRequest
+        {
+            public string sessionId;
         }
     }
 }

@@ -44,7 +44,15 @@ namespace DuckDoku.Presentation
 
         private async UniTask Build()
         {
-            _levels = await _levelMapSource.GetLevelsAsync();
+            try
+            {
+                _levels = await _levelMapSource.GetLevelsAsync();
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                return;
+            }
 
             _columns = _data.Columns;
             _cellSize = CalculateCellSize(_columns);
@@ -55,7 +63,47 @@ namespace DuckDoku.Presentation
             _data.Content.sizeDelta = new Vector2(_data.Content.sizeDelta.x, contentHeight);
 
             _data.ScrollRect.onValueChanged.AddListener(OnScroll);
+
+            ScrollToUnlockedLevel();
             UpdateVisibleRange();
+        }
+
+        private void ScrollToUnlockedLevel()
+        {
+            int unlockedIndex = FindUnlockedIndex();
+            if (unlockedIndex < 0)
+            {
+                return;
+            }
+
+            float viewportHeight = _data.Viewport.rect.height;
+            float contentHeight = _data.Content.rect.height;
+            float scrollableHeight = Mathf.Max(0f, contentHeight - viewportHeight);
+
+            if (scrollableHeight <= 0f)
+            {
+                return;
+            }
+
+            int row = unlockedIndex / _columns;
+            float rowStep = _cellSize.y + _data.SpacingY;
+            float rowCenterY = _data.PaddingTop + row * rowStep + _cellSize.y * 0.5f;
+
+            float desiredOffsetY = Mathf.Clamp(rowCenterY - viewportHeight * 0.5f, 0f, scrollableHeight);
+            _data.ScrollRect.verticalNormalizedPosition = 1f - desiredOffsetY / scrollableHeight;
+        }
+
+        private int FindUnlockedIndex()
+        {
+            for (int i = 0; i < _levels.Count; i++)
+            {
+                if (_levels[i].Status == LevelStatus.Unlocked)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         private void OnScroll(Vector2 _)

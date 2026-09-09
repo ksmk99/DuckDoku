@@ -21,7 +21,7 @@ namespace DuckDoku.Presentation
         {
             _icon.transform.DOKill();
 
-            _icon.sprite = _feedback.FullSprite;
+            _icon.color = _feedback.FullColor;
             _icon.transform.localScale = Vector3.one;
         }
 
@@ -29,7 +29,7 @@ namespace DuckDoku.Presentation
         {
             _icon.transform.DOKill();
 
-            _icon.sprite = _feedback.EmptySprite;
+            _icon.color = _feedback.EmptyColor;
             _icon.transform.DOPunchScale(_feedback.PunchStrength, _feedback.PunchDuration, _feedback.PunchVibrato);
         }
     }

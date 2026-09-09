@@ -18,7 +18,9 @@ namespace DuckDoku.App
         private readonly ILevelFinishContext _finishContext;
         private readonly BoardPresenter _boardPresenter;
         private readonly LivesPresenter _livesPresenter;
-        private readonly GamePlayView _gameplayView;
+        private readonly HintService _hintService;
+        private readonly HintFlowCoordinator _hintFlowCoordinator;
+        private readonly ILevelStartSignal _startSignal;
 
         private BoardSession _session;
         private PuzzleDefinition _puzzle;
@@ -35,7 +37,9 @@ namespace DuckDoku.App
             ILevelFinishContext finishContext,
             BoardPresenter boardPresenter,
             LivesPresenter livesPresenter,
-            GamePlayView gameplayView)
+            HintService hintService,
+            HintFlowCoordinator hintFlowCoordinator,
+            ILevelStartSignal startSignal)
         {
             if (levelSource == null)
             {
@@ -77,9 +81,19 @@ namespace DuckDoku.App
                 throw new ArgumentNullException(nameof(livesPresenter));
             }
 
-            if (gameplayView == null)
+            if (hintService == null)
             {
-                throw new ArgumentNullException(nameof(gameplayView));
+                throw new ArgumentNullException(nameof(hintService));
+            }
+
+            if (hintFlowCoordinator == null)
+            {
+                throw new ArgumentNullException(nameof(hintFlowCoordinator));
+            }
+
+            if (startSignal == null)
+            {
+                throw new ArgumentNullException(nameof(startSignal));
             }
 
             _levelSource = levelSource;
@@ -90,13 +104,14 @@ namespace DuckDoku.App
             _finishContext = finishContext;
             _boardPresenter = boardPresenter;
             _livesPresenter = livesPresenter;
-            _gameplayView = gameplayView;
+            _hintService = hintService;
+            _hintFlowCoordinator = hintFlowCoordinator;
+            _startSignal = startSignal;
         }
 
         public void Initialize()
         {
             _finishContext.RetryRequested += OnRetryRequested;
-            _gameplayView.NextRequested += OnNextRequested;
 
             StartAsync().Forget();
         }
@@ -104,20 +119,12 @@ namespace DuckDoku.App
         public void Dispose()
         {
             _finishContext.RetryRequested -= OnRetryRequested;
-            _gameplayView.NextRequested -= OnNextRequested;
 
             DetachSession();
         }
 
-        private void OnNextRequested()
-        {
-            _levelLauncher.ReturnToMap();
-        }
-
         private async UniTaskVoid StartAsync()
         {
-            _gameplayView.SetNextEnabled(false);
-
             _levelId = _levelLauncher.GetLevelId();
 
             try
@@ -134,6 +141,8 @@ namespace DuckDoku.App
             LevelToPlay levelToPlay = await _levelSource.GetPuzzleByLevel(_levelId);
             _puzzle = levelToPlay.Puzzle;
 
+            _startSignal.MarkStarted();
+
             BeginAttempt();
         }
 
@@ -147,7 +156,8 @@ namespace DuckDoku.App
 
             _boardPresenter.AttachBoard(_session);
             _livesPresenter.Attach(_session.Mistakes);
-            _gameplayView.SetNextEnabled(true);
+            _hintService.Attach(_session.Board, _puzzle);
+            _hintFlowCoordinator.Attach(_levelId, _sessionId);
         }
 
         private void DetachSession()
@@ -162,6 +172,7 @@ namespace DuckDoku.App
 
             _boardPresenter.DetachBoard();
             _livesPresenter.Detach();
+            _hintService.Detach();
 
             _session.Dispose();
             _session = null;
@@ -191,7 +202,7 @@ namespace DuckDoku.App
 
         private async UniTaskVoid CompleteAsync(Cell[] cells)
         {
-            LevelResult result = default;
+            LevelResult result;
 
             try
             {
@@ -200,9 +211,11 @@ namespace DuckDoku.App
             catch (Exception exception)
             {
                 Debug.LogException(exception);
+                _levelLauncher.ReturnToMap();
+                return;
             }
 
-            _finishContext.SetResult(LevelOutcome.Victory, result.Stars, result.DurationMs);
+            _finishContext.SetResult(LevelOutcome.Victory, result.Stars, result.DurationMs, result.Coins);
 
             ShowFinishAsync().Forget();
         }
@@ -211,7 +224,7 @@ namespace DuckDoku.App
         {
             DetachSession();
 
-            _finishContext.SetResult(LevelOutcome.Defeat, 0, 0);
+            _finishContext.SetResult(LevelOutcome.Defeat, 0, 0, 0);
 
             ShowFinishAsync().Forget();
         }

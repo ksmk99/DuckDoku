@@ -1,6 +1,7 @@
 using System;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace DuckDoku.Presentation
@@ -10,14 +11,15 @@ namespace DuckDoku.Presentation
         [SerializeField] private GameObject _victoryBanner;
         [SerializeField] private GameObject _defeatBanner;
         [SerializeField] private StarView[] _stars;
+        [SerializeField] private CoinsRewardView _coinsReward;
         [SerializeField] private LevelFinishFeedbackConfig _feedback;
-        [SerializeField] private Button _retryButton;
+        [SerializeField] private Button _continueButton;
         [SerializeField] private Button _nextButton;
 
-        public event Action RetryRequested;
+        public event Action ContinueRequested;
         public event Action NextRequested;
 
-        public void ShowVictory(int stars)
+        public void ShowVictory(int stars, int coins)
         {
             _victoryBanner.SetActive(true);
             _defeatBanner.SetActive(false);
@@ -37,12 +39,18 @@ namespace DuckDoku.Presentation
                     _stars[i].ShowUnearned();
                 }
             }
+
+            float lastStarDelay = Mathf.Max(0, stars - 1) * _feedback.StarDelayStep;
+            float coinsDelay = lastStarDelay + _feedback.StarPopDuration + _feedback.CoinsRevealDelayAfterStars;
+            _coinsReward.PlayReward(coins, coinsDelay);
         }
 
         public void ShowDefeat()
         {
             _victoryBanner.SetActive(false);
             _defeatBanner.SetActive(true);
+
+            _coinsReward.Hide();
 
             _defeatBanner.transform.DOKill();
             _defeatBanner.transform.localScale = Vector3.zero;
@@ -56,13 +64,15 @@ namespace DuckDoku.Presentation
                 star.Setup(_feedback);
             }
 
-            _retryButton.onClick.AddListener(OnRetryClicked);
+            _coinsReward.Setup(_feedback);
+
+            _continueButton.onClick.AddListener(OnRetryClicked);
             _nextButton.onClick.AddListener(OnNextClicked);
         }
 
         private void OnRetryClicked()
         {
-            RetryRequested?.Invoke();
+            ContinueRequested?.Invoke();
         }
 
         private void OnNextClicked()

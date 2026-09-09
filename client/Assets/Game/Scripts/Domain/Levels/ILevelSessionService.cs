@@ -9,5 +9,9 @@ namespace DuckDoku.Domain
         UniTask<string> StartLevelAsync(int levelId);
 
         UniTask<LevelResult> CompleteLevelAsync(int levelId, string sessionId, IReadOnlyList<Cell> placement);
+
+        UniTask<bool> UseHintAsync(int levelId, string sessionId);
+
+        UniTask<bool> PurchaseHintAsync();
     }
 }

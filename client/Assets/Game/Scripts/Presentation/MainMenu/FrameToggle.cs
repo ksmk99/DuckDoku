@@ -16,6 +16,8 @@ namespace DuckDoku.Presentation
         private readonly TFrame _frame;
         private readonly ClickCooldown _cooldown = new ClickCooldown(ClickCooldownMs);
 
+        private bool _isOpen;
+
         public FrameToggle(Button openBtn, Button closeBtn, GameObject frameRoot, TFrame frame)
         {
             _openBtn = openBtn;
@@ -38,22 +40,24 @@ namespace DuckDoku.Presentation
 
         private void OpenFrame()
         {
-            if (!_cooldown.TryConsume())
+            if (_isOpen || !_cooldown.TryConsume())
             {
                 return;
             }
 
+            _isOpen = true;
             _frameRoot.SetActive(true);
             _frame.OpenFrame();
         }
 
         private void CloseFrame()
         {
-            if (!_cooldown.TryConsume())
+            if (!_isOpen || !_cooldown.TryConsume())
             {
                 return;
             }
 
+            _isOpen = false;
             _frameRoot.SetActive(false);
             _frame.CloseFrame();
         }

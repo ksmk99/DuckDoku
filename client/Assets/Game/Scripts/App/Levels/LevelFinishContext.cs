@@ -8,14 +8,16 @@ namespace DuckDoku.App
         public LevelOutcome Outcome { get; private set; }
         public int Stars { get; private set; }
         public long DurationMs { get; private set; }
+        public int Coins { get; private set; }
 
         public event Action RetryRequested;
 
-        public void SetResult(LevelOutcome outcome, int stars, long durationMs)
+        public void SetResult(LevelOutcome outcome, int stars, long durationMs, int coins)
         {
             Outcome = outcome;
             Stars = stars;
             DurationMs = durationMs;
+            Coins = coins;
         }
 
         public void RequestRetry()

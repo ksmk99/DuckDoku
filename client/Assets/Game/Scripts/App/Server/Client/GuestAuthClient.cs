@@ -35,6 +35,8 @@ namespace DuckDoku.App
 
             using (UnityWebRequest request = UnityWebRequest.Post(url, body, "application/json"))
             {
+                request.timeout = _serverConfig.RequestTimeoutSeconds;
+
                 UnityWebRequest result = await request.SendWebRequest().WithCancellation(cancellationToken);
 
                 GuestResponse response = JsonUtility.FromJson<GuestResponse>(result.downloadHandler.text);

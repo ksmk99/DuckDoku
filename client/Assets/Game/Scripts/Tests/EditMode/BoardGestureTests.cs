@@ -9,6 +9,9 @@ namespace DuckDoku.Tests
         private const int Pointer = 0;
         private const int OtherPointer = 1;
 
+        private const float DoubleTapSeconds = 0.22f;
+        private const float StaleTimeoutSeconds = 999f;
+
         private FakeGestureBoard _board;
         private BoardGesture _gesture;
 
@@ -16,7 +19,7 @@ namespace DuckDoku.Tests
         public void SetUp()
         {
             _board = new FakeGestureBoard();
-            _gesture = new BoardGesture(_board);
+            _gesture = new BoardGesture(_board, DoubleTapSeconds, StaleTimeoutSeconds);
         }
 
         [Test]
@@ -212,6 +215,30 @@ namespace DuckDoku.Tests
             Tap(3, 3, 1.05f);
 
             Assert.That(_board.Log, Does.Not.Contain("duck 3:3"));
+        }
+
+        [Test]
+        public void Tick_BeforeStaleTimeout_KeepsGestureActive()
+        {
+            _gesture.Press(Pointer, 0, 0, 1f);
+
+            _gesture.Tick(1f + StaleTimeoutSeconds - 0.01f);
+
+            _gesture.Press(Pointer, 5, 5, 1f + StaleTimeoutSeconds);
+
+            Assert.That(_board.At(5, 5), Is.EqualTo(FakeCell.Empty));
+        }
+
+        [Test]
+        public void Tick_AfterStaleTimeout_ReleasesStuckGesture()
+        {
+            _gesture.Press(Pointer, 0, 0, 1f);
+
+            _gesture.Tick(1f + StaleTimeoutSeconds + 0.01f);
+
+            _gesture.Press(Pointer, 5, 5, 1f + StaleTimeoutSeconds + 0.02f);
+
+            Assert.That(_board.At(5, 5), Is.EqualTo(FakeCell.Cross));
         }
 
         private void Tap(int row, int column, float time)

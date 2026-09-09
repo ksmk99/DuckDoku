@@ -10,6 +10,7 @@ namespace DuckDoku.App
     public class DevClient : IDevClient
     {
         private const string GrantMaxEnergyPath = "/api/v1/dev/energy/max";
+        private const string GrantCurrencyPath = "/api/v1/dev/currency/grant";
 
         private readonly ServerConfig _serverConfig;
         private readonly PlayerSession _session;
@@ -26,6 +27,15 @@ namespace DuckDoku.App
             {
                 string json = await SendAsync(request, cancellationToken);
                 return JsonUtility.FromJson<DevEnergyResponse>(json);
+            }
+        }
+
+        public async UniTask<DevCurrencyResponse> GrantCurrency(CancellationToken cancellationToken = default)
+        {
+            using (UnityWebRequest request = UnityWebRequest.Post(_serverConfig.BaseUrl + GrantCurrencyPath, string.Empty, "application/json"))
+            {
+                string json = await SendAsync(request, cancellationToken);
+                return JsonUtility.FromJson<DevCurrencyResponse>(json);
             }
         }
 
