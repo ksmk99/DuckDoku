@@ -65,7 +65,8 @@ else
     AppDbContext database =
         scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    database.Database.EnsureCreated();
+    //database.Database.EnsureCreated();
+    database.Database.Migrate();
 }
 
 app.UseExceptionHandler();
