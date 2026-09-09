@@ -8,7 +8,9 @@ public record StartLevelResponse(Guid SessionId, int Energy, int EnergyMax, long
 
 public record CompleteLevelResponse(long Duration, int Stars);
 
-public record NextLevelResponse(int NextLevelId, int Energy, int EnergyMax, long EnergyRefillMs);
+public record NextLevelResponse(int NextLevelId, int Energy, int EnergyMax, long EnergyRefillMs, LevelStars[] Stars);
+
+public record LevelStars(int LevelId, int Stars);
 
 public record CompleteLevelRequest(Guid SessionId, RequestCell[] placement);
 
@@ -36,12 +38,12 @@ public static class LevelEndpoints
             return Results.Unauthorized();
         }
 
-        List<int> completedLevelIds = await database.LevelProgress
+        LevelStars[] stars = await database.LevelProgress
             .Where(progress => progress.PlayerId == device.PlayerId)
-            .Select(progress => progress.LevelId)
-            .ToListAsync();
+            .Select(progress => new LevelStars(progress.LevelId, progress.BestResult))
+            .ToArrayAsync();
 
-        HashSet<int> completedSet = completedLevelIds.ToHashSet();
+        HashSet<int> completedSet = stars.Select(entry => entry.LevelId).ToHashSet();
 
         int nextLevelId = -1;
         foreach (var level in catalogService.Catalog.Levels.OrderBy(level => level.Id))
@@ -55,7 +57,7 @@ public static class LevelEndpoints
 
         (int value, TimeSpan timeToNext) = await GetEnergyForDisplayAsync(database, device.PlayerId);
 
-        return Results.Ok(new NextLevelResponse(nextLevelId, value, EnergyPolicy.Maximum, (long)timeToNext.TotalMilliseconds));
+        return Results.Ok(new NextLevelResponse(nextLevelId, value, EnergyPolicy.Maximum, (long)timeToNext.TotalMilliseconds, stars));
     }
 
     private static async Task<(int Value, TimeSpan TimeToNext)> GetEnergyForDisplayAsync(AppDbContext database, Guid playerId)

@@ -10,7 +10,7 @@ namespace DuckDoku.Presentation
         [SerializeField] private RectTransform _grid;
         [SerializeField] private GridLayoutGroup _layout;
         [SerializeField] private CellView _cellPrefab;
-        [SerializeField] private Color[] _palette;
+        [SerializeField] private ColorPaletteConfig _palette;
 
         private CellView[] _cells;
         private int _size;
@@ -19,7 +19,7 @@ namespace DuckDoku.Presentation
         public event Action<int, int, int> CellEntered;
         public event Action<int> CellReleased;
 
-        public void Build(int size, int[] regions)
+        public void Build(int size, int[] regions, CellFeedbackConfig feedback)
         {
             if (regions == null)
             {
@@ -50,7 +50,7 @@ namespace DuckDoku.Presentation
 
                     CellView cell = Instantiate(_cellPrefab, _grid);
 
-                    cell.Setup(this, row, column, _palette[regions[index] % _palette.Length]);
+                    cell.Setup(this, row, column, _palette.Colors[regions[index] % _palette.Colors.Count], feedback);
 
                     cell.SetBorders(
                         IsBorder(regions, size, row, column, -1, 0),
@@ -67,6 +67,26 @@ namespace DuckDoku.Presentation
         public void Show(int row, int column, CellState state, bool hasConflict)
         {
             _cells[row * _size + column].Show(state, hasConflict);
+        }
+
+        public void PlayCrossPainted(int row, int column)
+        {
+            _cells[row * _size + column].PlayCrossPainted();
+        }
+
+        public void PlayCorrectPlacement(int row, int column)
+        {
+            _cells[row * _size + column].PlayCorrectPlacement();
+        }
+
+        public void PlayWrongPlacement(int row, int column)
+        {
+            _cells[row * _size + column].PlayWrongPlacement();
+        }
+
+        public void PlayGroupWave(int row, int column, float delay)
+        {
+            _cells[row * _size + column].PlayGroupWave(delay);
         }
 
         public void HandleCellPressed(int pointerId, int row, int column)

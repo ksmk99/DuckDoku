@@ -7,8 +7,6 @@ namespace DuckDoku.App
 {
     public class LevelMapSource : ILevelMapSource
     {
-        private const int NoNextLevel = -1;
-
         private readonly LevelCatalogAsset _catalog;
         private readonly ILevelsClient _levelsClient;
         private readonly IEnergyService _energyService;
@@ -20,27 +18,58 @@ namespace DuckDoku.App
             _energyService = energyService;
         }
 
+        public async UniTask<int> GetNextLevelIdAsync()
+        {
+            NextLevelResponse response = await _levelsClient.GetNextLevel();
+
+            _energyService.Apply(response.energy, response.energyMax, response.energyRefillMs);
+
+            return response.nextLevelId;
+        }
+
         public async UniTask<IReadOnlyList<LevelSummary>> GetLevelsAsync()
         {
             NextLevelResponse response = await _levelsClient.GetNextLevel();
-            int nextLevelId = response.nextLevelId;
 
             _energyService.Apply(response.energy, response.energyMax, response.energyRefillMs);
+
+            int nextLevelId = response.nextLevelId;
+            Dictionary<int, int> starsByLevelId = ToStarsMap(response.stars);
 
             LevelRecord[] levels = _catalog.Levels.OrderBy(record => record.Id).ToArray();
             var summaries = new LevelSummary[levels.Length];
 
             for (int i = 0; i < levels.Length; i++)
             {
-                summaries[i] = new LevelSummary(levels[i].Id, ToStatus(levels[i].Id, nextLevelId));
+                int levelId = levels[i].Id;
+                int stars = starsByLevelId.TryGetValue(levelId, out int value) ? value : 0;
+
+                summaries[i] = new LevelSummary(levelId, ToStatus(levelId, nextLevelId), stars);
             }
 
             return summaries;
         }
 
+        private static Dictionary<int, int> ToStarsMap(LevelStarsEntry[] entries)
+        {
+            var map = new Dictionary<int, int>();
+
+            if (entries == null)
+            {
+                return map;
+            }
+
+            foreach (LevelStarsEntry entry in entries)
+            {
+                map[entry.levelId] = entry.stars;
+            }
+
+            return map;
+        }
+
         private static LevelStatus ToStatus(int levelId, int nextLevelId)
         {
-            if (nextLevelId == NoNextLevel)
+            if (nextLevelId == LevelMapPolicy.NoNextLevel)
             {
                 return LevelStatus.Completed;
             }

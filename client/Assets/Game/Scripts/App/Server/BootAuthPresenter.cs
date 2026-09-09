@@ -41,7 +41,7 @@ namespace DuckDoku.App
 
         private async UniTaskVoid LoginAsync(CancellationToken cancellationToken)
         {
-            _output.text = "Connecting...";
+            _output.text = "Waking up the server, this can take up to a minute on the first visit...";
 
             try
             {

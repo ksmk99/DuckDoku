@@ -42,7 +42,7 @@ namespace DuckDoku.Presentation
 
             if (_finishContext.Outcome == LevelOutcome.Victory)
             {
-                _view.ShowVictory();
+                _view.ShowVictory(_finishContext.Stars);
             }
             else
             {

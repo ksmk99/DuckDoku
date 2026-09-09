@@ -11,20 +11,17 @@ namespace DuckDoku.Presentation
     {
         private readonly LevelFactoryGridData _data;
         private readonly ILevelMapSource _levelMapSource;
-        private readonly ILevelLauncher _levelLauncher;
-        private readonly IEnergyService _energyService;
+        private readonly ILevelEntryGate _levelEntryGate;
 
         private LevelPresenter[] _levels;
 
         public LevelGridFactory(LevelFactoryGridData data,
-            ILevelMapSource  levelMapSource,
-            ILevelLauncher levelLauncher,
-            IEnergyService energyService)
+            ILevelMapSource  levelMapSource, 
+            ILevelEntryGate levelEntryGate)
         {
             _data = data;
             _levelMapSource = levelMapSource;
-            _levelLauncher = levelLauncher;
-            _energyService = energyService;
+            _levelEntryGate = levelEntryGate;
         }
 
         public void Initialize()
@@ -47,9 +44,9 @@ namespace DuckDoku.Presentation
             {
                     LevelView view = GameObject.Instantiate(_data.LevelPrefab, _data.Grid);
 
-                    view.Setup(levelsStates[i].LevelId, levelsStates[i].Status);
+                    view.Setup(levelsStates[i].LevelId, levelsStates[i].Status, levelsStates[i].Stars);
                     var model = new LevelModel(levelsStates[i]);
-                    var presenter = new LevelPresenter(view, model, _levelLauncher, _energyService);
+                    var presenter = new LevelPresenter(view, model, _levelEntryGate);
 
                     _levels[i] = presenter;
             }

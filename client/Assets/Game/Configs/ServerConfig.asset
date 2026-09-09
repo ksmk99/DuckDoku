@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f0294f96b04480d862aef90566f3550, type: 3}
   m_Name: ServerConfig
   m_EditorClassIdentifier: DuckDoku.App::DuckDoku.App.ServerConfig
-  _baseUrl: http://localhost:5190
+  _baseUrl: https://duckdoku-kj2a.onrender.com

@@ -1,4 +1,5 @@
-﻿using DuckDoku.Domain;
+using DG.Tweening;
+using DuckDoku.Domain;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -28,14 +29,18 @@ namespace DuckDoku.Presentation
         [SerializeField] private Color _blockedColor = new Color(0.35f, 0.35f, 0.35f, 1f);
 
         private BoardView _board;
+        private CellFeedbackConfig _feedback;
         private int _row;
         private int _column;
+        private Color _regionColor;
 
-        public void Setup(BoardView board, int row, int column, Color regionColor)
+        public void Setup(BoardView board, int row, int column, Color regionColor, CellFeedbackConfig feedback)
         {
             _board = board;
             _row = row;
             _column = column;
+            _regionColor = regionColor;
+            _feedback = feedback;
 
             _background.color = regionColor;
         }
@@ -78,8 +83,57 @@ namespace DuckDoku.Presentation
             _conflictFrame.color = hasConflict ? _conflictColor : _normalColor;
         }
 
+        public void PlayCrossPainted()
+        {
+            _content.transform.DOKill();
+
+            _content.transform.localScale = Vector3.one * 0.7f;
+            _content.transform.DOScale(Vector3.one, _feedback.CrossPulseDuration).SetEase(Ease.OutQuad);
+            
+            _background.transform.localScale = Vector3.one * 0.85f;
+            _background.transform.DOScale(Vector3.one, _feedback.CrossPulseDuration).SetEase(Ease.OutQuad);
+        }
+
+        public void PlayCorrectPlacement()
+        {
+            _content.transform.DOKill();
+            _background.DOKill();
+
+            DOTween.Sequence()
+                .Append(_content.transform.DOScale(Vector3.one * _feedback.AnticipationScale, _feedback.AnticipationDuration).SetEase(Ease.InQuad))
+                .Append(_content.transform.DOScale(Vector3.one * _feedback.ImpactScale, _feedback.ImpactDuration).SetEase(Ease.OutBack))
+                .Append(_content.transform.DOScale(Vector3.one, _feedback.SettleDuration).SetEase(Ease.OutQuad));
+
+            _background.DOColor(_feedback.SuccessFlashColor, _feedback.ImpactDuration)
+                .SetEase(Ease.OutQuad)
+                .OnComplete(() => _background.DOColor(_regionColor, _feedback.WaveSettleDuration).SetEase(Ease.InQuad));
+        }
+
+        public void PlayGroupWave(float delay)
+        {
+            _background.DOKill();
+
+            _background.DOColor(_feedback.SuccessFlashColor, _feedback.WaveFlashDuration)
+                .SetEase(Ease.OutQuad)
+                .SetDelay(delay)
+                .OnComplete(() => _background.DOColor(_regionColor, _feedback.WaveSettleDuration).SetEase(Ease.InQuad));
+        }
+
+        public void PlayWrongPlacement()
+        {
+            _content.transform.DOKill();
+            _background.DOKill();
+
+            _content.transform.DOShakePosition(_feedback.ShakeDuration, _feedback.ShakeStrength, _feedback.ShakeVibrato);
+            _background.DOColor(Darken(_regionColor, _feedback.BlockedDarkenFactor), _feedback.BackgroundTintDuration).SetEase(Ease.OutQuad);
+        }
+
         public void Release()
         {
+            _content.transform.DOKill();
+            _content.DOKill();
+            _background.DOKill();
+
             _board = null;
         }
 
@@ -111,6 +165,11 @@ namespace DuckDoku.Presentation
             }
 
             _board.HandleCellReleased(eventData.pointerId);
+        }
+
+        private static Color Darken(Color color, float factor)
+        {
+            return new Color(color.r * factor, color.g * factor, color.b * factor, color.a);
         }
     }
 }

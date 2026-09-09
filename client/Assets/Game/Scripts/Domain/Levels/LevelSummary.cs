@@ -4,11 +4,13 @@
     {
         public int LevelId { get; }
         public LevelStatus Status { get; }
-        
-        public LevelSummary(int levelId, LevelStatus status)
+        public int Stars { get; }
+
+        public LevelSummary(int levelId, LevelStatus status, int stars)
         {
             LevelId = levelId;
             Status = status;
+            Stars = stars;
         }
     }
 }

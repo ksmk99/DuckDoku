@@ -6,42 +6,40 @@ namespace DuckDoku.Presentation
 {
     public class LevelPresenter : IDisposable
     {
+        private const int ClickCooldownMs = 200;
+
         private readonly LevelView _levelView;
         private readonly LevelModel _model;
-        private readonly ILevelLauncher _levelLauncher;
-        private readonly IEnergyService _energyService;
+        private readonly ILevelEntryGate _entryGate;
+        private readonly ClickCooldown _cooldown = new ClickCooldown(ClickCooldownMs);
 
-        public LevelPresenter(LevelView levelView, LevelModel model, ILevelLauncher levelLauncher,
-            IEnergyService energyService)
+        public LevelPresenter(LevelView levelView, LevelModel model, ILevelEntryGate entryGate)
         {
             _levelView = levelView;
             _model = model;
-            _levelLauncher = levelLauncher;
-            _energyService = energyService;
+            _entryGate = entryGate;
 
             _levelView.Onclick += LaunchLevel;
         }
 
         private void LaunchLevel()
         {
+            if (!_cooldown.TryConsume())
+            {
+                return;
+            }
+
             if (_model.LevelSummary.Status != LevelStatus.Unlocked)
             {
                 return;
             }
 
-            if (!_energyService.HasEnough(EnergyPolicy.EntryCost))
-            {
-                _energyService.NotifyDenied();
-                return;
-            }
-
-            _levelLauncher.LaunchLevel(_model.LevelSummary.LevelId);
+            _entryGate.TryStart(_model.LevelSummary.LevelId);
         }
 
         public void Dispose()
         {
             _levelView.Onclick -= LaunchLevel;
-            GameObject.Destroy(_levelView);
         }
     }
 }

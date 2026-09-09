@@ -17,6 +17,7 @@ namespace DuckDoku.App
         private readonly IStateMachine _stateMachine;
         private readonly ILevelFinishContext _finishContext;
         private readonly BoardPresenter _boardPresenter;
+        private readonly LivesPresenter _livesPresenter;
         private readonly GamePlayView _gameplayView;
 
         private BoardSession _session;
@@ -33,6 +34,7 @@ namespace DuckDoku.App
             IStateMachine stateMachine,
             ILevelFinishContext finishContext,
             BoardPresenter boardPresenter,
+            LivesPresenter livesPresenter,
             GamePlayView gameplayView)
         {
             if (levelSource == null)
@@ -70,6 +72,11 @@ namespace DuckDoku.App
                 throw new ArgumentNullException(nameof(boardPresenter));
             }
 
+            if (livesPresenter == null)
+            {
+                throw new ArgumentNullException(nameof(livesPresenter));
+            }
+
             if (gameplayView == null)
             {
                 throw new ArgumentNullException(nameof(gameplayView));
@@ -82,6 +89,7 @@ namespace DuckDoku.App
             _stateMachine = stateMachine;
             _finishContext = finishContext;
             _boardPresenter = boardPresenter;
+            _livesPresenter = livesPresenter;
             _gameplayView = gameplayView;
         }
 
@@ -136,10 +144,9 @@ namespace DuckDoku.App
             _session = _sessionFactory.Create(_puzzle);
             _session.Board.Solved += OnSolved;
             _session.Mistakes.Failed += OnFailed;
-            _session.Mistakes.MistakeMade += OnMistakeMade;
 
             _boardPresenter.AttachBoard(_session);
-            _gameplayView.SetLivesRemaining(MistakeTracker.MaxMistakes);
+            _livesPresenter.Attach(_session.Mistakes);
             _gameplayView.SetNextEnabled(true);
         }
 
@@ -152,17 +159,12 @@ namespace DuckDoku.App
 
             _session.Board.Solved -= OnSolved;
             _session.Mistakes.Failed -= OnFailed;
-            _session.Mistakes.MistakeMade -= OnMistakeMade;
 
             _boardPresenter.DetachBoard();
+            _livesPresenter.Detach();
 
             _session.Dispose();
             _session = null;
-        }
-
-        private void OnMistakeMade(int mistakesLeft)
-        {
-            _gameplayView.SetLivesRemaining(mistakesLeft);
         }
 
 #if UNITY_EDITOR

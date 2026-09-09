@@ -10,7 +10,7 @@ namespace DuckDoku.App
         private const string JsonRelativePath = "../../content/levels/catalog.json";
         private const string AssetPath = "Assets/Game/Configs/LevelCatalog.asset";
 
-        [MenuItem("DuckDoku/Bake Level Catalog")]
+        [MenuItem("Tools/Bake Level Catalog")]
         public static void Bake()
         {
             string jsonPath = Path.GetFullPath(Path.Combine(Application.dataPath, JsonRelativePath));

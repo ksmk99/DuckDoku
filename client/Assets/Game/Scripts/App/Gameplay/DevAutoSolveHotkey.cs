@@ -4,9 +4,6 @@ using Zenject;
 
 namespace DuckDoku.App
 {
-    // Developer Script: только для редактора, ни при каких условиях не попадает в билд игрока
-    // (весь файл под UNITY_EDITOR). Позволяет мгновенно решить текущий уровень пробелом,
-    // не выходя из PlayMode.
     public class DevAutoSolveHotkey : ITickable
     {
         private readonly GameplayCoordinator _coordinator;
