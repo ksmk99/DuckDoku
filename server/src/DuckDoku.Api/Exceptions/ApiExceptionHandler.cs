@@ -20,6 +20,7 @@ public class ApiExceptionHandler : IExceptionHandler
             [ErrorCode.NotEnoughEnergy] = HttpStatusCode.Conflict,
             [ErrorCode.NotEnoughCurrency] = HttpStatusCode.Conflict,
             [ErrorCode.EnergyFull] = HttpStatusCode.Conflict,
+            [ErrorCode.NotEnoughHints] = HttpStatusCode.Conflict,
 
             [ErrorCode.LevelLocked] = HttpStatusCode.Forbidden,
             [ErrorCode.SessionExpired] = HttpStatusCode.Conflict,

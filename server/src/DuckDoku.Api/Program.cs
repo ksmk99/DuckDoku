@@ -80,5 +80,8 @@ app.MapAuthEndpoints();
 app.MapProfileEndpoints();
 app.MapServerTimeEndpoints();
 app.MapLevelEndpoints();
+app.MapCurrenciesEndpoints();
+app.MapEnergyEndpoints();
+app.MapHintsEndpoints();
 
 app.Run();

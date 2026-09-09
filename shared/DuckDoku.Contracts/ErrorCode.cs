@@ -11,10 +11,11 @@
         TokenRevoked = 11,                                                   
         DeviceBanned = 12,                                                   
                                                                                
-        NotEnoughEnergy = 20,                                                
-        NotEnoughCurrency = 21,                                              
-        EnergyFull = 22,                                                     
-                                                                               
+        NotEnoughEnergy = 20,
+        NotEnoughCurrency = 21,
+        EnergyFull = 22,
+        NotEnoughHints = 23,
+
         LevelLocked = 30,                                                    
         SessionExpired = 31,                                                 
         SessionAlreadyClaimed = 32,                                          

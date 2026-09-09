@@ -16,6 +16,8 @@ namespace DuckDoku.Api
         public DbSet<LevelProgress> LevelProgress => Set<LevelProgress>();
         public DbSet<LevelSession> LevelSession => Set<LevelSession>();
         public DbSet<EnergyState> Energy => Set<EnergyState>();
+        public DbSet<CurrencyState> Currency => Set<CurrencyState>();
+        public DbSet<HintsState> Hints => Set<HintsState>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,6 +31,12 @@ namespace DuckDoku.Api
             
             modelBuilder.Entity<EnergyState>()
                 .HasKey(state => state.PlayerId);
+
+            modelBuilder.Entity<CurrencyState>()
+                .HasKey(state => state.PlayerId);
+
+            modelBuilder.Entity<HintsState>()
+                .HasKey(state => state.PlayerId);
         }
     }
 
@@ -38,7 +46,19 @@ namespace DuckDoku.Api
         public int Value { get; set; }
         public DateTime? UpdatedAt { get; set; }
     }
-    
+
+    public class CurrencyState
+    {
+        public Guid PlayerId { get; set; }
+        public int Balance { get; set; }
+    }
+
+    public class HintsState
+    {
+        public Guid PlayerId { get; set; }
+        public int Count { get; set; }
+    }
+
     public class Player
     {
         public Guid Id { get; set; }

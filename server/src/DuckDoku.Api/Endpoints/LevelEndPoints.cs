@@ -6,7 +6,7 @@ namespace DuckDoku.Api.Endpoints;
 
 public record StartLevelResponse(Guid SessionId, int Energy, int EnergyMax, long EnergyRefillMs);
 
-public record CompleteLevelResponse(long Duration, int Stars);
+public record CompleteLevelResponse(long Duration, int Stars, int Balance, int CoinsEarned);
 
 public record NextLevelResponse(int NextLevelId, int Energy, int EnergyMax, long EnergyRefillMs, LevelStars[] Stars);
 
@@ -16,6 +16,10 @@ public record CompleteLevelRequest(Guid SessionId, RequestCell[] placement);
 
 public record RequestCell(int Row, int Column);
 
+public record UseHintRequest(Guid SessionId);
+
+public record UseHintResponse(int Hints);
+
 public static class LevelEndpoints
 {
     public static IEndpointRouteBuilder MapLevelEndpoints(this IEndpointRouteBuilder builder)
@@ -23,6 +27,7 @@ public static class LevelEndpoints
         builder.MapGet("/api/v1/levels/next", GetNextLevel);
         builder.MapPost("/api/v1/levels/{levelId}/start", StartLevel);
         builder.MapPost("/api/v1/levels/{levelId}/complete", CompleteLevel);
+        builder.MapPost("/api/v1/levels/{levelId}/hint", UseHint);
 
         return builder;
     }
@@ -147,9 +152,90 @@ public static class LevelEndpoints
             levelProgress.CompletedAt = DateTime.UtcNow;
         }
 
+        CurrencyState? currencyState = await database.Currency
+            .FirstOrDefaultAsync(currency => currency.PlayerId == device.PlayerId);
+
+        int balance = (currencyState?.Balance ?? 0) + level.BaseReward;
+
+        if (currencyState is null)
+        {
+            database.Currency.Add(new CurrencyState()
+            {
+                PlayerId = device.PlayerId,
+                Balance = balance
+            });
+        }
+        else
+        {
+            currencyState.Balance = balance;
+        }
+
         await database.SaveChangesAsync();
 
-        return Results.Ok(new CompleteLevelResponse((long)playTime.TotalMilliseconds, starsCount));
+        return Results.Ok(new CompleteLevelResponse((long)playTime.TotalMilliseconds, starsCount, balance, level.BaseReward));
+    }
+
+    private static async Task<IResult> UseHint(int levelId,
+        UseHintRequest request,
+        HttpContext context,
+        AppDbContext database,
+        LevelCatalogService catalogService)
+    {
+        Device? device = await PlayerAuthentication.FindDeviceAsync(context, database);
+
+        if (device is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        if (!catalogService.Catalog.HasLevel(levelId))
+        {
+            throw new ApiException(ErrorCode.LevelLocked, "Level doesn't exist.");
+        }
+
+        var levelSession = await database.LevelSession
+            .FirstOrDefaultAsync(session => session.Id == request.SessionId &&
+                                            session.PlayerId == device.PlayerId &&
+                                            session.LevelId == levelId);
+
+        if (levelSession is null)
+        {
+            throw new ApiException(ErrorCode.LevelLocked, "Player didn't start this level.");
+        }
+
+        if (levelSession.ClaimedAt != null)
+        {
+            throw new ApiException(ErrorCode.SessionAlreadyClaimed, "Reward is already claimed.");
+        }
+
+        HintsState? hintsState = await database.Hints
+            .FirstOrDefaultAsync(hints => hints.PlayerId == device.PlayerId);
+
+        int count = hintsState?.Count ?? 0;
+
+        if (count < 1)
+        {
+            throw new ApiException(ErrorCode.NotEnoughHints, "Not enough hints.");
+        }
+
+        count -= 1;
+
+        if (hintsState is null)
+        {
+            database.Hints.Add(new HintsState()
+            {
+                PlayerId = device.PlayerId,
+                Count = count
+            });
+        }
+        else
+        {
+            hintsState.Count = count;
+        }
+
+        await database.SaveChangesAsync();
+
+        return Results.Ok(new UseHintResponse(count));
     }
 
     private static async Task<IResult> StartLevel(int levelId,
