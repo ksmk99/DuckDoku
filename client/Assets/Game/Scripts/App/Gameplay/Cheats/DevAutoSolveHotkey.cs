@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using UnityEngine.InputSystem;
 using Zenject;
 
@@ -15,11 +15,12 @@ namespace DuckDoku.App
 
         public void Tick()
         {
+#if UNITY_EDITOR
             if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
             {
                 _coordinator.DevSolveInstantly();
             }
+#endif
         }
     }
 }
-#endif

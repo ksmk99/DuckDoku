@@ -57,8 +57,11 @@ namespace DuckDoku.Presentation
             _columns = _data.Columns;
             _cellSize = CalculateCellSize(_columns);
 
+            _data.Content.anchorMin = new Vector2(0f, 1f);
+            _data.Content.anchorMax = new Vector2(1f, 1f);
+
             int totalRows = Mathf.CeilToInt(_levels.Count / (float)_columns);
-            float contentHeight = totalRows * (_cellSize.y + _data.SpacingY)
+            float contentHeight = totalRows * _cellSize.y + Mathf.Max(0, totalRows - 1) * _data.SpacingY
                                    + _data.PaddingTop + _data.PaddingBottom;
             _data.Content.sizeDelta = new Vector2(_data.Content.sizeDelta.x, contentHeight);
 
@@ -122,12 +125,14 @@ namespace DuckDoku.Presentation
             float viewportHeight = _data.Viewport.rect.height;
             float contentHeight = _data.Content.rect.height;
             float scrollableHeight = Mathf.Max(0f, contentHeight - viewportHeight);
-            float offsetY = (1f - _data.ScrollRect.verticalNormalizedPosition) * scrollableHeight;
+            float offsetY = Mathf.Clamp((1f - _data.ScrollRect.verticalNormalizedPosition) * scrollableHeight,
+                0f, scrollableHeight);
 
             int totalRows = Mathf.CeilToInt(_levels.Count / (float)_columns);
-            int firstRow = Mathf.Max(0, Mathf.FloorToInt(offsetY / rowStep) - BufferRows);
+            int maxRow = Mathf.Max(0, totalRows - 1);
+            int firstRow = Mathf.Clamp(Mathf.FloorToInt(offsetY / rowStep) - BufferRows, 0, maxRow);
             int rowsOnScreen = Mathf.CeilToInt(viewportHeight / rowStep) + BufferRows * 2;
-            int lastRow = Mathf.Min(totalRows - 1, firstRow + rowsOnScreen);
+            int lastRow = Mathf.Min(maxRow, firstRow + rowsOnScreen);
 
             int firstIndex = firstRow * _columns;
             int lastIndex = Mathf.Min(_levels.Count - 1, (lastRow + 1) * _columns - 1);

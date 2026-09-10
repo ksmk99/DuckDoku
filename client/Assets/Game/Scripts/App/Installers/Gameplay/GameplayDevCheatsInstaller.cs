@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using Zenject;
 
 namespace DuckDoku.App
@@ -7,8 +6,9 @@ namespace DuckDoku.App
     {
         public override void InstallBindings()
         {
+#if UNITY_EDITOR
             Container.BindInterfacesAndSelfTo<DevAutoSolveHotkey>().AsSingle();
+#endif
         }
     }
 }
-#endif

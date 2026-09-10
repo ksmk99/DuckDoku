@@ -27,6 +27,11 @@ MonoBehaviour:
   _waveFlashDuration: 0.12
   _waveSettleDuration: 0.18
   _groupWaveDelayStep: 0.03
+  _introBaseColor: {r: 0.872, g: 0.872, b: 0.872, a: 1}
+  _introPopScale: 0.85
+  _introPopDuration: 0.18
+  _introFillDuration: 0.22
+  _introWaveDelayStep: 0.035
   _hintAccentColor: {r: 1, g: 1, b: 1, a: 0.4509804}
   _hintAccentPulseDuration: 0.35
   _hoverColor: {r: 1, g: 1, b: 1, a: 0.18039216}

@@ -28,6 +28,13 @@ namespace DuckDoku.Presentation
         [SerializeField] private float _waveSettleDuration = 0.18f;
         [SerializeField] private float _groupWaveDelayStep = 0.03f;
 
+        [Header("Появление сетки")]
+        [SerializeField] private Color _introBaseColor = Color.white;
+        [SerializeField] private float _introPopScale = 0.85f;
+        [SerializeField] private float _introPopDuration = 0.18f;
+        [SerializeField] private float _introFillDuration = 0.22f;
+        [SerializeField] private float _introWaveDelayStep = 0.035f;
+
         [Header("Подсказка")]
         [SerializeField] private Color _hintAccentColor = new Color(1f, 0.85f, 0.3f, 0.85f);
         [SerializeField] private float _hintAccentPulseDuration = 0.5f;
@@ -59,6 +66,12 @@ namespace DuckDoku.Presentation
         public float WaveFlashDuration => _waveFlashDuration;
         public float WaveSettleDuration => _waveSettleDuration;
         public float GroupWaveDelayStep => _groupWaveDelayStep;
+
+        public Color IntroBaseColor => _introBaseColor;
+        public float IntroPopScale => _introPopScale;
+        public float IntroPopDuration => _introPopDuration;
+        public float IntroFillDuration => _introFillDuration;
+        public float IntroWaveDelayStep => _introWaveDelayStep;
 
         public Color HintAccentColor => _hintAccentColor;
         public float HintAccentPulseDuration => _hintAccentPulseDuration;

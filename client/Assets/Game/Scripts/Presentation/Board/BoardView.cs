@@ -64,6 +64,23 @@ namespace DuckDoku.Presentation
                     _cells[index] = cell;
                 }
             }
+
+            PlayIntroReveal(size, feedback);
+        }
+
+        private void PlayIntroReveal(int size, CellFeedbackConfig feedback)
+        {
+            int centerRow = (size - 1) / 2;
+            int centerColumn = (size - 1) / 2;
+
+            for (int row = 0; row < size; row++)
+            {
+                for (int column = 0; column < size; column++)
+                {
+                    float delay = feedback.IntroWaveDelayStep * ChebyshevDistance(row, column, centerRow, centerColumn);
+                    _cells[row * size + column].PlayIntroReveal(delay);
+                }
+            }
         }
 
         public void Show(int row, int column, CellState state, bool hasConflict)
@@ -183,6 +200,11 @@ namespace DuckDoku.Presentation
             float side = Mathf.Floor(Mathf.Min(horizontal, vertical) / size);
 
             return new Vector2(side, side);
+        }
+
+        private static int ChebyshevDistance(int rowA, int columnA, int rowB, int columnB)
+        {
+            return Mathf.Max(Mathf.Abs(rowA - rowB), Mathf.Abs(columnA - columnB));
         }
 
         private static bool IsBorder(int[] regions, int size, int row, int column, int rowStep, int columnStep)

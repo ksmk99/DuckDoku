@@ -7,13 +7,12 @@ using UnityEngine.UI;
 
 namespace DuckDoku.Presentation
 {
-    public class CellView : MonoBehaviour,
+    public class CellView : ACellView,
         IPointerDownHandler,
         IPointerEnterHandler,
         IPointerExitHandler,
         IPointerUpHandler
     {
-        [SerializeField] private Image _background;
         [SerializeField] private Image _content;
         [SerializeField] private Image _conflictFrame;
         [FormerlySerializedAs("_dimOverlay")]
@@ -47,7 +46,7 @@ namespace DuckDoku.Presentation
             _regionColor = regionColor;
             _feedback = feedback;
 
-            _background.color = regionColor;
+            Background.color = feedback.IntroBaseColor;
 
             Color hintColor = _feedback.HintAccentColor;
             _hintOverlay.color = new Color(hintColor.r, hintColor.g, hintColor.b, 0f);
@@ -67,6 +66,11 @@ namespace DuckDoku.Presentation
             _borderBottom.SetActive(bottom);
             _borderLeft.SetActive(left);
             _borderRight.SetActive(right);
+        }
+
+        public override void Show(CellState state)
+        {
+            Show(state, false);
         }
 
         public void Show(CellState state, bool hasConflict)
@@ -106,42 +110,54 @@ namespace DuckDoku.Presentation
             _content.transform.localScale = Vector3.one * 0.7f;
             _content.transform.DOScale(Vector3.one, _feedback.CrossPulseDuration).SetEase(Ease.OutQuad);
             
-            _background.transform.localScale = Vector3.one * 0.85f;
-            _background.transform.DOScale(Vector3.one, _feedback.CrossPulseDuration).SetEase(Ease.OutQuad);
+            Background.transform.localScale = Vector3.one * 0.85f;
+            Background.transform.DOScale(Vector3.one, _feedback.CrossPulseDuration).SetEase(Ease.OutQuad);
         }
 
         public void PlayCorrectPlacement()
         {
             _content.transform.DOKill();
-            _background.DOKill();
+            Background.DOKill();
 
             DOTween.Sequence()
                 .Append(_content.transform.DOScale(Vector3.one * _feedback.AnticipationScale, _feedback.AnticipationDuration).SetEase(Ease.InQuad))
                 .Append(_content.transform.DOScale(Vector3.one * _feedback.ImpactScale, _feedback.ImpactDuration).SetEase(Ease.OutBack))
                 .Append(_content.transform.DOScale(Vector3.one, _feedback.SettleDuration).SetEase(Ease.OutQuad));
 
-            _background.DOColor(_feedback.SuccessFlashColor, _feedback.ImpactDuration)
+            Background.DOColor(_feedback.SuccessFlashColor, _feedback.ImpactDuration)
                 .SetEase(Ease.OutQuad)
-                .OnComplete(() => _background.DOColor(_regionColor, _feedback.WaveSettleDuration).SetEase(Ease.InQuad));
+                .OnComplete(() => Background.DOColor(_regionColor, _feedback.WaveSettleDuration).SetEase(Ease.InQuad));
+        }
+
+        public void PlayIntroReveal(float waveDelay)
+        {
+            transform.DOKill();
+            transform.localScale = Vector3.one * _feedback.IntroPopScale;
+            transform.DOScale(Vector3.one, _feedback.IntroPopDuration).SetEase(Ease.OutBack);
+
+            Background.DOKill();
+            Background.DOColor(_regionColor, _feedback.IntroFillDuration)
+                .SetEase(Ease.OutQuad)
+                .SetDelay(waveDelay);
         }
 
         public void PlayGroupWave(float delay)
         {
-            _background.DOKill();
+            Background.DOKill();
 
-            _background.DOColor(_feedback.SuccessFlashColor, _feedback.WaveFlashDuration)
+            Background.DOColor(_feedback.SuccessFlashColor, _feedback.WaveFlashDuration)
                 .SetEase(Ease.OutQuad)
                 .SetDelay(delay)
-                .OnComplete(() => _background.DOColor(_regionColor, _feedback.WaveSettleDuration).SetEase(Ease.InQuad));
+                .OnComplete(() => Background.DOColor(_regionColor, _feedback.WaveSettleDuration).SetEase(Ease.InQuad));
         }
 
         public void PlayWrongPlacement()
         {
             _content.transform.DOKill();
-            _background.DOKill();
+            Background.DOKill();
 
             _content.transform.DOShakePosition(_feedback.ShakeDuration, _feedback.ShakeStrength, _feedback.ShakeVibrato);
-            _background.DOColor(Darken(_regionColor, _feedback.BlockedDarkenFactor), _feedback.BackgroundTintDuration).SetEase(Ease.OutQuad);
+            Background.DOColor(Darken(_regionColor, _feedback.BlockedDarkenFactor), _feedback.BackgroundTintDuration).SetEase(Ease.OutQuad);
         }
 
         public void PlayHintAccent()
@@ -195,9 +211,10 @@ namespace DuckDoku.Presentation
 
         public void Release()
         {
+            transform.DOKill();
             _content.transform.DOKill();
             _content.DOKill();
-            _background.DOKill();
+            Background.DOKill();
             _hintOverlay.DOKill();
             _hoverOverlay?.DOKill();
 

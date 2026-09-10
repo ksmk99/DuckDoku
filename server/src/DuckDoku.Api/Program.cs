@@ -46,27 +46,17 @@ builder.Services.AddHostedService<LevelCatalogInitializer>();
 WebApplication app = builder.Build();
 
 
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    AppDbContext database =
+        scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    database.Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
-    using IServiceScope scope = app.Services.CreateScope();
-
-    AppDbContext database =
-        scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-    database.Database.EnsureDeleted();
-    database.Database.EnsureCreated();
-
     app.MapDevEndpoints();
-}
-else
-{
-    using IServiceScope scope = app.Services.CreateScope();
-
-    AppDbContext database =
-        scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-    //database.Database.EnsureCreated();
-    database.Database.Migrate();
 }
 
 app.UseExceptionHandler();
