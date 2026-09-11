@@ -409,7 +409,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 5134961171436766444}
   - {fileID: 7954717439770872393}
   - {fileID: 6857892440019510224}
   - {fileID: 709417179106992298}
@@ -419,6 +418,7 @@ Transform:
   - {fileID: 2486026265123057308}
   - {fileID: 2879246530056616617}
   - {fileID: 130372815990557819}
+  - {fileID: 5134961171436766444}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6507364687781697413
@@ -592,5 +592,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa0a10cb361ed154886a6d69b8c7c5d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DuckDoku.App::DuckDoku.App.CoreInstaller
-  _serverConfig: {fileID: 11400000, guid: b2cddb1305e12bb49853001b6c54db25, type: 2}
+  _serverConfig: {fileID: 11400000, guid: 3c10d344393c5224b81b316056bb02e9, type: 2}
   _sfxConfig: {fileID: 11400000, guid: c7860338a3cdc3e439a6c80ed6159881, type: 2}

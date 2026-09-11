@@ -9,6 +9,10 @@ namespace DuckDoku.App
 {
     public class BootAuthPresenter : IInitializable, IDisposable
     {
+        private const float WakeUpMessageDelaySeconds = 5f;
+        private const string LoadingMessage = "Loading...";
+        private const string WakingUpMessage = "The server is waking up after being idle. This can take up to 50 seconds — thanks for waiting!";
+
         private readonly IGuestAuthClient _authClient;
         private readonly BootAuthView _view;
         private readonly BootRetryConfig _retryConfig;
@@ -87,50 +91,77 @@ namespace DuckDoku.App
             float startTime = Time.realtimeSinceStartup;
             int attempt = 0;
 
-            while (true)
+            CancellationTokenSource wakeUpCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            ShowWakingUpMessageAfterDelayAsync(wakeUpCts.Token).Forget();
+
+            try
             {
-                attempt++;
-                _view.ShowStatus("Loading...");
-
-                try
+                while (true)
                 {
-                    await LoginOnceAsync(cancellationToken);
-                    return;
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                catch (UnityWebRequestException networkException)
-                {
-                    float elapsedAfterFailure = Time.realtimeSinceStartup - startTime;
-                    if (elapsedAfterFailure >= _retryConfig.MaxRetryWindowSeconds)
-                    {
-                        _view.ShowError("Server unavailable. Tap to retry.");
-                        Debug.LogError(networkException);
-                        return;
-                    }
-
-                    float delay = Mathf.Min(
-                        _retryConfig.BaseRetryDelaySeconds * Mathf.Pow(2f, attempt - 1),
-                        _retryConfig.MaxRetryDelaySeconds);
+                    attempt++;
+                    _view.ShowStatus(Time.realtimeSinceStartup - startTime >= WakeUpMessageDelaySeconds
+                        ? WakingUpMessage
+                        : LoadingMessage);
 
                     try
                     {
-                        await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: cancellationToken);
+                        await LoginOnceAsync(cancellationToken);
+                        return;
                     }
                     catch (OperationCanceledException)
                     {
                         return;
                     }
-                }
-                catch (Exception exception)
-                {
-                    _view.ShowError("Server unavailable. Tap to retry.");
-                    Debug.LogError(exception);
-                    return;
+                    catch (UnityWebRequestException networkException)
+                    {
+                        float elapsedAfterFailure = Time.realtimeSinceStartup - startTime;
+                        if (elapsedAfterFailure >= _retryConfig.MaxRetryWindowSeconds)
+                        {
+                            _view.ShowError("Server unavailable. Tap to retry.");
+                            Debug.LogError(networkException);
+                            return;
+                        }
+
+                        float delay = Mathf.Min(
+                            _retryConfig.BaseRetryDelaySeconds * Mathf.Pow(2f, attempt - 1),
+                            _retryConfig.MaxRetryDelaySeconds);
+
+                        try
+                        {
+                            await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: cancellationToken);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            return;
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        _view.ShowError("Server unavailable. Tap to retry.");
+                        Debug.LogError(exception);
+                        return;
+                    }
                 }
             }
+            finally
+            {
+                wakeUpCts.Cancel();
+                wakeUpCts.Dispose();
+            }
+        }
+
+        private async UniTaskVoid ShowWakingUpMessageAfterDelayAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(WakeUpMessageDelaySeconds), cancellationToken: cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
+            _view.ShowStatus(WakingUpMessage);
         }
 
         private async UniTask LoginOnceAsync(CancellationToken cancellationToken)
