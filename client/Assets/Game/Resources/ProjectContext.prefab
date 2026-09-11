@@ -592,5 +592,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa0a10cb361ed154886a6d69b8c7c5d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DuckDoku.App::DuckDoku.App.CoreInstaller
-  _serverConfig: {fileID: 11400000, guid: 3c10d344393c5224b81b316056bb02e9, type: 2}
+  _serverConfig: {fileID: 11400000, guid: b2cddb1305e12bb49853001b6c54db25, type: 2}
   _sfxConfig: {fileID: 11400000, guid: c7860338a3cdc3e439a6c80ed6159881, type: 2}

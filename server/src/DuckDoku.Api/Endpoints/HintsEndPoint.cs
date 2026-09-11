@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DuckDoku.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -8,8 +9,12 @@ public record HintsStateResponse(int Hints);
 
 public record PurchaseHintResponse(int Balance, int Hints);
 
+public record PurchaseHintRequest(Guid RequestId);
+
 public static class HintsEndPoint
 {
+    private static readonly JsonSerializerOptions ResponseJsonOptions = new(JsonSerializerDefaults.Web);
+
     public static IEndpointRouteBuilder MapHintsEndpoints(this IEndpointRouteBuilder builder)
     {
         builder.MapGet("/api/v1/hints", GetHints);
@@ -33,13 +38,21 @@ public static class HintsEndPoint
         return Results.Ok(new HintsStateResponse(hintsState?.Count ?? 0));
     }
 
-    private static async Task<IResult> PurchaseHint(HttpContext context, AppDbContext database)
+    private static async Task<IResult> PurchaseHint(PurchaseHintRequest request, HttpContext context,
+        AppDbContext database)
     {
         Device? device = await PlayerAuthentication.FindDeviceAsync(context, database);
 
         if (device is null)
         {
             return Results.Unauthorized();
+        }
+
+        IResult? replay = await IdempotencyGuard.FindReplayAsync(database, device.PlayerId, request.RequestId);
+
+        if (replay is not null)
+        {
+            return replay;
         }
 
         const int maxAttempts = 3;
@@ -93,27 +106,48 @@ public static class HintsEndPoint
                 hintsState.Count = count;
             }
 
+            var response = new PurchaseHintResponse(balance, count);
+            var record = new IdempotencyRecord
+            {
+                RequestId = request.RequestId,
+                PlayerId = device.PlayerId,
+                ResponseBody = JsonSerializer.Serialize(response, ResponseJsonOptions),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            database.IdempotencyRecords.Add(record);
+
             try
             {
                 await database.SaveChangesAsync();
 
-                return Results.Ok(new PurchaseHintResponse(balance, count));
+                return Results.Ok(response);
             }
             catch (DbUpdateConcurrencyException)
             {
                 database.Entry(currencyState).State = EntityState.Detached;
                 database.Entry(hintsState).State = EntityState.Detached;
+                database.Entry(record).State = EntityState.Detached;
             }
             catch (DbUpdateException exception)
             {
-                if (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
-                {
-                    database.Entry(currencyState).State = EntityState.Detached;
-                    database.Entry(hintsState).State = EntityState.Detached;
-                }
-                else
+                if (exception.InnerException is not PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                 {
                     throw;
+                }
+
+                database.Entry(currencyState).State = EntityState.Detached;
+                database.Entry(hintsState).State = EntityState.Detached;
+                database.Entry(record).State = EntityState.Detached;
+
+                if (IdempotencyGuard.IsConflict(exception))
+                {
+                    IResult? conflictReplay = await IdempotencyGuard.FindReplayAsync(database, device.PlayerId, request.RequestId);
+
+                    if (conflictReplay is not null)
+                    {
+                        return conflictReplay;
+                    }
                 }
             }
         }

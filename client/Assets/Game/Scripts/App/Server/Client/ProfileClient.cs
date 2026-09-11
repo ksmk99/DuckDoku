@@ -1,8 +1,6 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.Networking;
 
 namespace DuckDoku.App
 {
@@ -11,48 +9,29 @@ namespace DuckDoku.App
         private const string ProfilePath = "/api/v1/profile";
         private const string ChangeNamePath = "/api/v1/profile/name";
 
-        private readonly ServerConfig _serverConfig;
-        private readonly PlayerSession _session;
+        private readonly IApiRequestExecutor _api;
 
-        public ProfileClient(ServerConfig serverConfig,
-            PlayerSession session)
+        public ProfileClient(IApiRequestExecutor api)
         {
-            _serverConfig = serverConfig;
-            _session = session;
+            _api = api;
         }
 
-        public async UniTask<PlayerProfile> GetProfile(CancellationToken cancellationToken = default)
+        public UniTask<PlayerProfile> GetProfile(CancellationToken cancellationToken = default)
         {
-            using (UnityWebRequest request = UnityWebRequest.Get(_serverConfig.BaseUrl + ProfilePath))
-            {
-                return await SendAsync(request, cancellationToken);
-            }
+            return RequireValidProfile(_api.GetAsync<PlayerProfile>(ProfilePath, cancellationToken));
         }
 
-        public async UniTask<PlayerProfile> ChangeName(string name, CancellationToken cancellationToken = default)
+        public UniTask<PlayerProfile> ChangeName(string name, CancellationToken cancellationToken = default)
         {
-            string body = JsonUtility.ToJson(new ChangeNameRequest() { displayName = name });
-            using (UnityWebRequest request = UnityWebRequest.Put(_serverConfig.BaseUrl + ChangeNamePath, body))
-            {
-                request.SetRequestHeader("Content-Type", "application/json");
+            ChangeNameRequest body = new ChangeNameRequest { displayName = name };
 
-                return await SendAsync(request, cancellationToken);
-            }
+            return RequireValidProfile(_api.PutAsync<PlayerProfile>(ChangeNamePath, body, cancellationToken));
         }
 
-        private async UniTask<PlayerProfile> SendAsync(UnityWebRequest request, CancellationToken cancellationToken)
+        private static async UniTask<PlayerProfile> RequireValidProfile(UniTask<PlayerProfile> request)
         {
-            if (!_session.IsAuthenticated)
-            {
-                throw new Exception("Not authenticated: call guest login first.");
-            }
+            PlayerProfile profile = await request;
 
-            request.timeout = _serverConfig.RequestTimeoutSeconds;
-            request.SetRequestHeader("Authorization", "Ducky " + _session.Token);
-
-            UnityWebRequest result = await request.SendWebRequest().WithCancellation(cancellationToken);
-
-            PlayerProfile profile = JsonUtility.FromJson<PlayerProfile>(result.downloadHandler.text);
             if (profile == null || string.IsNullOrEmpty(profile.playerId))
             {
                 throw new Exception("Profile response is empty.");

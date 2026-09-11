@@ -1,8 +1,6 @@
-﻿using System;
+using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.Networking;
 
 namespace DuckDoku.App
 {
@@ -10,43 +8,23 @@ namespace DuckDoku.App
     {
         private const string TimePath = "/api/v1/time";
 
-        private readonly ServerConfig _serverConfig;
-        private readonly PlayerSession _session;
+        private readonly IApiRequestExecutor _api;
 
-        public TimeClient(ServerConfig serverConfig, PlayerSession session)
+        public TimeClient(IApiRequestExecutor api)
         {
-            _serverConfig = serverConfig;
-            _session = session;
+            _api = api;
         }
 
         public async UniTask<ServerTimeResponse> GetServerTimeAsync(CancellationToken cancellationToken = default)
         {
-            using (UnityWebRequest request = UnityWebRequest.Get(_serverConfig.BaseUrl + TimePath))
-            {
-                return await SendAsync(request, cancellationToken);
-            }
-        }
+            ServerTimeResponse response = await _api.GetAsync<ServerTimeResponse>(TimePath, cancellationToken);
 
-        private async UniTask<ServerTimeResponse> SendAsync(UnityWebRequest request,
-            CancellationToken cancellationToken)
-        {
-            if (!_session.IsAuthenticated)
+            if (response == null)
             {
-                throw new Exception("Not authenticated: call guest login first.");
+                throw new Exception("Server time response is empty.");
             }
 
-            request.timeout = _serverConfig.RequestTimeoutSeconds;
-            request.SetRequestHeader("Authorization", "Ducky " + _session.Token);
-
-            UnityWebRequest result = await request.SendWebRequest().WithCancellation(cancellationToken);
-
-            ServerTimeResponse timeResponse = JsonUtility.FromJson<ServerTimeResponse>(result.downloadHandler.text);
-            if (timeResponse == null)
-            {
-                throw new Exception("Error getting server time");
-            }
-
-            return timeResponse;
+            return response;
         }
     }
 }

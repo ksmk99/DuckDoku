@@ -18,6 +18,7 @@ namespace DuckDoku.Api
         public DbSet<EnergyState> Energy => Set<EnergyState>();
         public DbSet<CurrencyState> Currency => Set<CurrencyState>();
         public DbSet<HintsState> Hints => Set<HintsState>();
+        public DbSet<IdempotencyRecord> IdempotencyRecords => Set<IdempotencyRecord>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -53,6 +54,9 @@ namespace DuckDoku.Api
             modelBuilder.Entity<HintsState>()
                 .Property(state => state.Version)
                 .IsRowVersion();
+
+            modelBuilder.Entity<IdempotencyRecord>()
+                .HasKey(record => record.RequestId);
         }
     }
 
@@ -96,5 +100,13 @@ namespace DuckDoku.Api
         public DateTime LastSeenAt { get; set; }
 
         public string Token { get; set; } = "";
+    }
+
+    public class IdempotencyRecord
+    {
+        public Guid RequestId { get; set; }
+        public Guid PlayerId { get; set; }
+        public string ResponseBody { get; set; } = "";
+        public DateTime CreatedAt { get; set; }
     }
 }

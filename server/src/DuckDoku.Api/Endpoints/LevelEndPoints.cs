@@ -1,4 +1,5 @@
-﻿using DuckDoku.Contracts;
+﻿using System.Text.Json;
+using DuckDoku.Contracts;
 using DuckDoku.Puzzle;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -6,6 +7,8 @@ using Npgsql;
 namespace DuckDoku.Api.Endpoints;
 
 public record StartLevelResponse(Guid SessionId, int Energy, int EnergyMax, long EnergyRefillMs);
+
+public record StartLevelRequest(Guid RequestId);
 
 public record CompleteLevelResponse(long Duration, int Stars, int Balance, int CoinsEarned);
 
@@ -17,12 +20,14 @@ public record CompleteLevelRequest(Guid SessionId, RequestCell[] placement);
 
 public record RequestCell(int Row, int Column);
 
-public record UseHintRequest(Guid SessionId);
+public record UseHintRequest(Guid SessionId, Guid RequestId);
 
 public record UseHintResponse(int Hints);
 
 public static class LevelEndpoints
 {
+    private static readonly JsonSerializerOptions ResponseJsonOptions = new(JsonSerializerDefaults.Web);
+
     public static IEndpointRouteBuilder MapLevelEndpoints(this IEndpointRouteBuilder builder)
     {
         builder.MapGet("/api/v1/levels/next", GetNextLevel);
@@ -96,6 +101,13 @@ public static class LevelEndpoints
             throw new ApiException(ErrorCode.LevelLocked, "Level doesn't exist.");
         }
 
+        IResult? replay = await IdempotencyGuard.FindReplayAsync(database, device.PlayerId, request.SessionId);
+
+        if (replay is not null)
+        {
+            return replay;
+        }
+
         var level = catalogService.Catalog.GetLevel(levelId);
         var definition = new PuzzleDefinition(level.Size, level.Seed, level.Difficulty, level.Regions, level.Solution);
 
@@ -122,6 +134,13 @@ public static class LevelEndpoints
 
             if (levelSession.ClaimedAt != null)
             {
+                IResult? raceReplay = await IdempotencyGuard.FindReplayAsync(database, device.PlayerId, request.SessionId);
+
+                if (raceReplay is not null)
+                {
+                    return raceReplay;
+                }
+
                 throw new ApiException(ErrorCode.SessionAlreadyClaimed, "Reward is already claimed.");
             }
 
@@ -179,30 +198,52 @@ public static class LevelEndpoints
                 currencyState.Balance = balance;
             }
 
+            var response = new CompleteLevelResponse((long)playTime.TotalMilliseconds, starsCount, balance,
+                level.BaseReward);
+
+            var record = new IdempotencyRecord
+            {
+                RequestId = request.SessionId,
+                PlayerId = device.PlayerId,
+                ResponseBody = JsonSerializer.Serialize(response, ResponseJsonOptions),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            database.IdempotencyRecords.Add(record);
+
             try
             {
                 await database.SaveChangesAsync();
 
-                return Results.Ok(new CompleteLevelResponse((long)playTime.TotalMilliseconds, starsCount, balance,
-                    level.BaseReward));
+                return Results.Ok(response);
             }
             catch (DbUpdateConcurrencyException)
             {
                 database.Entry(levelSession).State = EntityState.Detached;
                 database.Entry(levelProgress).State = EntityState.Detached;
                 database.Entry(currencyState).State = EntityState.Detached;
+                database.Entry(record).State = EntityState.Detached;
             }
             catch (DbUpdateException exception)
             {
-                if (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
-                {
-                    database.Entry(levelSession).State = EntityState.Detached;
-                    database.Entry(levelProgress).State = EntityState.Detached;
-                    database.Entry(currencyState).State = EntityState.Detached;
-                }
-                else
+                if (exception.InnerException is not PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                 {
                     throw;
+                }
+
+                database.Entry(levelSession).State = EntityState.Detached;
+                database.Entry(levelProgress).State = EntityState.Detached;
+                database.Entry(currencyState).State = EntityState.Detached;
+                database.Entry(record).State = EntityState.Detached;
+
+                if (IdempotencyGuard.IsConflict(exception))
+                {
+                    IResult? conflictReplay = await IdempotencyGuard.FindReplayAsync(database, device.PlayerId, request.SessionId);
+
+                    if (conflictReplay is not null)
+                    {
+                        return conflictReplay;
+                    }
                 }
             }
         }
@@ -227,7 +268,7 @@ public static class LevelEndpoints
         {
             throw new ApiException(ErrorCode.LevelLocked, "Level doesn't exist.");
         }
-
+        
         var levelSession = await database.LevelSession
             .FirstOrDefaultAsync(session => session.Id == request.SessionId &&
                                             session.PlayerId == device.PlayerId &&
@@ -241,6 +282,13 @@ public static class LevelEndpoints
         if (levelSession.ClaimedAt != null)
         {
             throw new ApiException(ErrorCode.SessionAlreadyClaimed, "Reward is already claimed.");
+        }
+        
+        IResult? replay = await IdempotencyGuard.FindReplayAsync(database, device.PlayerId, request.RequestId);
+
+        if (replay is not null)
+        {
+            return replay;
         }
 
         const int maxAttempts = 3;
@@ -274,25 +322,46 @@ public static class LevelEndpoints
                 hintsState.Count = count;
             }
 
+            UseHintResponse response = new UseHintResponse(count);
+            IdempotencyRecord record = new IdempotencyRecord()
+            {
+                RequestId = request.RequestId,
+                PlayerId = device.PlayerId,
+                CreatedAt = DateTime.UtcNow,
+                ResponseBody = JsonSerializer.Serialize(response, ResponseJsonOptions),
+            };
+            
+            database.IdempotencyRecords.Add(record);
+
             try
             {
                 await database.SaveChangesAsync();
 
-                return Results.Ok(new UseHintResponse(count));
+                return Results.Ok(response);
             }
             catch (DbUpdateConcurrencyException)
             {
                 database.Entry(hintsState).State = EntityState.Detached;
+                database.Entry(record).State = EntityState.Detached;
             }
             catch (DbUpdateException exception)
             {
-                if (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
-                {
-                    database.Entry(hintsState).State = EntityState.Detached;
-                }
-                else
+                if (exception.InnerException is not PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                 {
                     throw;
+                }
+
+                database.Entry(hintsState).State = EntityState.Detached;
+                database.Entry(record).State = EntityState.Detached;
+
+                if (IdempotencyGuard.IsConflict(exception))
+                {
+                    IResult? conflictReplay = await IdempotencyGuard.FindReplayAsync(database, device.PlayerId, request.RequestId);
+
+                    if (conflictReplay is not null)
+                    {
+                        return conflictReplay;
+                    }
                 }
             }
         }
@@ -301,6 +370,7 @@ public static class LevelEndpoints
     }
 
     private static async Task<IResult> StartLevel(int levelId,
+        StartLevelRequest request,
         HttpContext context,
         AppDbContext database,
         LevelCatalogService catalogService)
@@ -329,6 +399,13 @@ public static class LevelEndpoints
             }
         }
 
+        IResult? replay = await IdempotencyGuard.FindReplayAsync(database, device.PlayerId, request.RequestId);
+
+        if (replay is not null)
+        {
+            return replay;
+        }
+
         const int maxAttempts = 3;
 
         for (int attempt = 0; attempt < maxAttempts; attempt++)
@@ -350,6 +427,8 @@ public static class LevelEndpoints
             LevelSession? levelSession = await database.LevelSession
                 .FirstOrDefaultAsync(session => session.LevelId == levelId && session.PlayerId == device.PlayerId);
 
+            IdempotencyRecord? staleCompletion = null;
+
             if (levelSession is null)
             {
                 levelSession = new LevelSession
@@ -366,6 +445,14 @@ public static class LevelEndpoints
             {
                 levelSession.StartsAt = DateTime.UtcNow;
                 levelSession.ClaimedAt = null;
+
+                staleCompletion = await database.IdempotencyRecords
+                    .FirstOrDefaultAsync(r => r.RequestId == levelSession.Id && r.PlayerId == device.PlayerId);
+
+                if (staleCompletion is not null)
+                {
+                    database.IdempotencyRecords.Remove(staleCompletion);
+                }
             }
 
             if (energyState is null)
@@ -385,30 +472,62 @@ public static class LevelEndpoints
                 energyState.UpdatedAt = newEnergyUpdatedAt;
             }
 
+            (int _, TimeSpan timeToNext) = EnergyPolicy.GetCurrent(newEnergyValue, newEnergyUpdatedAt, DateTime.UtcNow);
+
+            var response = new StartLevelResponse(levelSession.Id, newEnergyValue, EnergyPolicy.Maximum,
+                (long)timeToNext.TotalMilliseconds);
+
+            var record = new IdempotencyRecord
+            {
+                RequestId = request.RequestId,
+                PlayerId = device.PlayerId,
+                ResponseBody = JsonSerializer.Serialize(response, ResponseJsonOptions),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            database.IdempotencyRecords.Add(record);
+
             try
             {
                 await database.SaveChangesAsync();
 
-                (int _, TimeSpan timeToNext) = EnergyPolicy.GetCurrent(newEnergyValue, newEnergyUpdatedAt, DateTime.UtcNow);
-
-                return Results.Ok(new StartLevelResponse(levelSession.Id, newEnergyValue, EnergyPolicy.Maximum,
-                    (long)timeToNext.TotalMilliseconds));
+                return Results.Ok(response);
             }
             catch (DbUpdateConcurrencyException)
             {
                 database.Entry(energyState).State = EntityState.Detached;
                 database.Entry(levelSession).State = EntityState.Detached;
+                database.Entry(record).State = EntityState.Detached;
+
+                if (staleCompletion is not null)
+                {
+                    database.Entry(staleCompletion).State = EntityState.Detached;
+                }
             }
             catch (DbUpdateException exception)
             {
-                if (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
-                {
-                    database.Entry(energyState).State = EntityState.Detached;
-                    database.Entry(levelSession).State = EntityState.Detached;
-                }
-                else
+                if (exception.InnerException is not PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
                 {
                     throw;
+                }
+
+                database.Entry(energyState).State = EntityState.Detached;
+                database.Entry(levelSession).State = EntityState.Detached;
+                database.Entry(record).State = EntityState.Detached;
+
+                if (staleCompletion is not null)
+                {
+                    database.Entry(staleCompletion).State = EntityState.Detached;
+                }
+
+                if (IdempotencyGuard.IsConflict(exception))
+                {
+                    IResult? conflictReplay = await IdempotencyGuard.FindReplayAsync(database, device.PlayerId, request.RequestId);
+
+                    if (conflictReplay is not null)
+                    {
+                        return conflictReplay;
+                    }
                 }
             }
         }

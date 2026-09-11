@@ -1,8 +1,6 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.Networking;
 
 namespace DuckDoku.App
 {
@@ -10,44 +8,35 @@ namespace DuckDoku.App
     {
         private const string GuestAuthPath = "/api/v1/auth/guest";
 
-        private readonly ServerConfig _serverConfig;
+        private readonly IApiRequestExecutor _api;
         private readonly IDeviceIdProvider _deviceIdProvider;
         private readonly PlayerSession _session;
 
-        public GuestAuthClient(ServerConfig serverConfig,
+        public GuestAuthClient(IApiRequestExecutor api,
             IDeviceIdProvider deviceIdProvider,
             PlayerSession session)
         {
-            _serverConfig = serverConfig;
+            _api = api;
             _deviceIdProvider = deviceIdProvider;
             _session = session;
         }
 
         public async UniTask AuthenticateAsGuestAsync(CancellationToken cancellationToken = default)
         {
-            GuestRequest payload = new GuestRequest()
+            GuestRequest payload = new GuestRequest
             {
                 deviceId = _deviceIdProvider.GetDeviceID()
             };
 
-            string body = JsonUtility.ToJson(payload);
-            string url = _serverConfig.BaseUrl + GuestAuthPath;
+            GuestResponse response =
+                await _api.PostAsync<GuestResponse>(GuestAuthPath, payload, cancellationToken, requireAuth: false);
 
-            using (UnityWebRequest request = UnityWebRequest.Post(url, body, "application/json"))
+            if (response == null || string.IsNullOrEmpty(response.playerId))
             {
-                request.timeout = _serverConfig.RequestTimeoutSeconds;
-
-                UnityWebRequest result = await request.SendWebRequest().WithCancellation(cancellationToken);
-
-                GuestResponse response = JsonUtility.FromJson<GuestResponse>(result.downloadHandler.text);
-
-                if (response == null || string.IsNullOrEmpty(response.playerId))
-                {
-                    throw new Exception($"Guest Login returned wrong body: {result.downloadHandler.text}");
-                }
-
-                _session.SetAuthentication(response.playerId, response.token);
+                throw new Exception("Guest login returned an empty response.");
             }
+
+            _session.SetAuthentication(response.playerId, response.token);
         }
 
         [Serializable]

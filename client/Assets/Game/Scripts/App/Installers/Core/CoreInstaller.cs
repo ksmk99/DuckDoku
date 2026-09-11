@@ -13,9 +13,13 @@ namespace DuckDoku.App
         {
             Container.Bind<ServerConfig>().FromInstance(_serverConfig).AsSingle();
             Container.Bind<PlayerSession>().AsSingle();
+            Container.Bind<IApiRequestExecutor>().To<UnityWebRequestApiExecutor>().AsSingle();
 
             Container.Bind<IDeviceIdProvider>().To<DeviceIdProvider>().AsSingle();
             Container.Bind<IServerTimeService>().To<ServerTimeService>().AsSingle();
+            
+            Container.Bind<IPendingRequestTracker>().To<PendingRequestTracker>().AsSingle();                                                                                                                       
+            Container.Bind<IIdempotentApiClient>().To<IdempotentApiClient>().AsSingle();
 
             Container.Bind<IAudioSettings>().To<AudioSettings>().AsSingle();
             Container.Bind<SfxConfig>().FromInstance(_sfxConfig).AsSingle();

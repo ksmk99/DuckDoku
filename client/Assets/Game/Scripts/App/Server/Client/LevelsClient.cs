@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DuckDoku.Puzzle;
-using UnityEngine;
-using UnityEngine.Networking;
 
 namespace DuckDoku.App
 {
@@ -15,43 +13,39 @@ namespace DuckDoku.App
         private const string CompleteLevelPath = "/api/v1/levels/{0}/complete";
         private const string UseHintPath = "/api/v1/levels/{0}/hint";
 
-        private readonly ServerConfig _serverConfig;
-        private readonly PlayerSession _session;
+        private readonly IApiRequestExecutor _api;
+        private readonly IIdempotentApiClient _idempotentApi;
 
-        public LevelsClient(ServerConfig serverConfig, PlayerSession session)
+        public LevelsClient(IApiRequestExecutor api, IIdempotentApiClient _idempotentApi)
         {
-            _serverConfig = serverConfig;
-            _session = session;
+            _api = api;
+            this._idempotentApi = _idempotentApi;
         }
 
-        public async UniTask<NextLevelResponse> GetNextLevel(CancellationToken cancellationToken = default)
+        public UniTask<NextLevelResponse> GetNextLevel(CancellationToken cancellationToken = default)
         {
-            using (UnityWebRequest request = UnityWebRequest.Get(_serverConfig.BaseUrl + NextLevelPath))
-            {
-                string json = await SendAsync(request, cancellationToken);
-                return JsonUtility.FromJson<NextLevelResponse>(json);
-            }
+            return _api.GetAsync<NextLevelResponse>(NextLevelPath, cancellationToken);
         }
 
         public async UniTask<StartLevelResponse> StartLevel(int levelId, CancellationToken cancellationToken = default)
         {
             string path = string.Format(StartLevelPath, levelId);
 
-            using (UnityWebRequest request = UnityWebRequest.Post(_serverConfig.BaseUrl + path, string.Empty, "application/json"))
+            StartLevelResponse response = await _idempotentApi.PostIdempotentAsync<StartLevelRequest, StartLevelResponse>(
+                path,
+                "StartLevel",
+                requestId => new StartLevelRequest { requestId = requestId.ToString() },
+                cancellationToken);
+
+            if (response == null || string.IsNullOrEmpty(response.sessionId))
             {
-                string json = await SendAsync(request, cancellationToken);
-                StartLevelResponse response = JsonUtility.FromJson<StartLevelResponse>(json);
-
-                if (response == null || string.IsNullOrEmpty(response.sessionId))
-                {
-                    throw new Exception("Start level response is empty.");
-                }
-
-                return response;
+                throw new Exception("Start level response is empty.");
             }
+
+            return response;
         }
 
-        public async UniTask<CompleteLevelResponse> CompleteLevel(int levelId, string sessionId,
+        public UniTask<CompleteLevelResponse> CompleteLevel(int levelId, string sessionId,
             IReadOnlyList<Cell> placement, CancellationToken cancellationToken = default)
         {
             SerializedCell[] serializedPlacement = new SerializedCell[placement.Count];
@@ -64,50 +58,35 @@ namespace DuckDoku.App
                 };
             }
 
-            string body = JsonUtility.ToJson(new CompleteLevelRequest
+            CompleteLevelRequest body = new CompleteLevelRequest
             {
                 sessionId = sessionId,
                 placement = serializedPlacement
-            });
+            };
 
             string path = string.Format(CompleteLevelPath, levelId);
 
-            using (UnityWebRequest request = UnityWebRequest.Post(_serverConfig.BaseUrl + path, body, "application/json"))
-            {
-                string json = await SendAsync(request, cancellationToken);
-                return JsonUtility.FromJson<CompleteLevelResponse>(json);
-            }
+            return _api.PostAsync<CompleteLevelResponse>(path, body, cancellationToken);
         }
 
-        public async UniTask<UseHintResponse> UseHint(int levelId, string sessionId, CancellationToken cancellationToken = default)
+        public UniTask<UseHintResponse> UseHint(int levelId, string sessionId,
+            CancellationToken cancellationToken = default)
         {
-            string body = JsonUtility.ToJson(new UseHintRequest { sessionId = sessionId });
             string path = string.Format(UseHintPath, levelId);
-
-            using (UnityWebRequest request = UnityWebRequest.Post(_serverConfig.BaseUrl + path, body, "application/json"))
-            {
-                string json = await SendAsync(request, cancellationToken);
-                return JsonUtility.FromJson<UseHintResponse>(json);
-            }
+            
+            return _idempotentApi.PostIdempotentAsync<UseHintRequest, UseHintResponse>(
+                path,
+                "UseHint",
+                requestId => new UseHintRequest{ sessionId = sessionId, requestId = requestId.ToString() },
+                cancellationToken);
         }
 
-        private async UniTask<string> SendAsync(UnityWebRequest request, CancellationToken cancellationToken)
+        [Serializable]
+        private class StartLevelRequest : IIdempotentRequest
         {
-            if (!_session.IsAuthenticated)
-            {
-                throw new Exception("Not authenticated: call guest login first.");
-            }
+            public string requestId;
 
-            request.SetRequestHeader("Authorization", "Ducky " + _session.Token);
-
-            UnityWebRequest result = await request.SendWebRequest().WithCancellation(cancellationToken);
-
-            if (result.result != UnityWebRequest.Result.Success)
-            {
-                throw new Exception($"Request to {result.url} failed ({result.responseCode}): {result.error}");
-            }
-
-            return result.downloadHandler.text;
+            public Guid RequestId => Guid.Parse(requestId);
         }
 
         [Serializable]
@@ -118,9 +97,12 @@ namespace DuckDoku.App
         }
 
         [Serializable]
-        private class UseHintRequest
+        private class UseHintRequest : IIdempotentRequest
         {
             public string sessionId;
+            public string requestId;
+            
+            public Guid RequestId => Guid.Parse(requestId);
         }
     }
 }
