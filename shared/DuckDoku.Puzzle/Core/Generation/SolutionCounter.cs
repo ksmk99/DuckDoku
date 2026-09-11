@@ -17,7 +17,7 @@ namespace DuckDoku.Puzzle
 
             if (limit < 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(limit), limit, "Предел должен быть положительным.");
+                throw new ArgumentOutOfRangeException(nameof(limit), limit, "Limit must be positive.");
             }
 
             int found = 0;

@@ -64,7 +64,7 @@ namespace DuckDoku.Puzzle
             if (exclusiveMax <= 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(exclusiveMax), exclusiveMax, "Верхняя граница должна быть положительной.");
+                    nameof(exclusiveMax), exclusiveMax, "Upper bound must be positive.");
             }
 
             uint bound = (uint)exclusiveMax;

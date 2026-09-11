@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da54cf9e2a06479db2f7f32198417366, type: 3}
   m_Name: Rule Card Color Config
   m_EditorClassIdentifier: DuckDoku.Presentation::DuckDoku.Presentation.RuleCardConfig
-  _title: "1 \u0443\u0442\u043A\u0430 \u043D\u0430 \u0446\u0432\u0435\u0442"
+  _title: 1 Duck per color
   _size: 3
   _cells:
   - Row: 0

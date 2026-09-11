@@ -4,33 +4,28 @@ using DuckDoku.Puzzle;
 
 namespace DuckDoku.Domain
 {
-    public class HintService
+    public class HintService : ISessionAttachable
     {
         private static readonly Random Random = new Random();
 
         private BoardState _board;
-        private PuzzleDefinition _definition;
+        private IReadOnlyCollection<Cell> _solution;
 
         public Cell? ActiveHint { get; private set; }
 
         public event Action Changed;
 
-        public void Attach(BoardState board, PuzzleDefinition definition)
+        public void Attach(BoardSession session)
         {
-            if (board == null)
+            if (session == null)
             {
-                throw new ArgumentNullException(nameof(board));
-            }
-
-            if (definition == null)
-            {
-                throw new ArgumentNullException(nameof(definition));
+                throw new ArgumentNullException(nameof(session));
             }
 
             Detach();
 
-            _board = board;
-            _definition = definition;
+            _board = session.Board;
+            _solution = session.Solution;
             _board.CellChanged += OnCellChanged;
         }
 
@@ -43,7 +38,7 @@ namespace DuckDoku.Domain
 
             _board.CellChanged -= OnCellChanged;
             _board = null;
-            _definition = null;
+            _solution = null;
 
             ClearHint();
         }
@@ -57,7 +52,7 @@ namespace DuckDoku.Domain
 
             List<Cell> candidates = null;
 
-            foreach (Cell cell in _definition.Solution)
+            foreach (Cell cell in _solution)
             {
                 if (_board.GetCellState(cell.Row, cell.Column) != CellState.Duck)
                 {

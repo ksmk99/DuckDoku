@@ -28,11 +28,19 @@ namespace DuckDoku.Presentation
             _layout.constraintCount = size;
             _layout.cellSize = CalculateCellSize(size);
 
-            _cells = new RuleCellView[cells.Count];
+            RuleCellConfig?[] byPosition = new RuleCellConfig?[size * size];
 
             for (int i = 0; i < cells.Count; i++)
             {
                 RuleCellConfig cell = cells[i];
+                byPosition[cell.Row * size + cell.Column] = cell;
+            }
+
+            _cells = new RuleCellView[byPosition.Length];
+
+            for (int index = 0; index < byPosition.Length; index++)
+            {
+                RuleCellConfig cell = byPosition[index] ?? default;
 
                 Color regionColor = regionColors.Count > 0
                     ? regionColors[cell.Region % regionColors.Count]
@@ -42,7 +50,7 @@ namespace DuckDoku.Presentation
                 view.SetColor(regionColor);
                 view.Show(cell.State);
 
-                _cells[i] = view;
+                _cells[index] = view;
             }
         }
 

@@ -19,7 +19,7 @@ try
 
     CatalogWriter.Write(outputPath, CatalogVersion, catalog);
 
-    Console.WriteLine($"level-baker: испечено {catalog.Count} уровней -> {outputPath}");
+    Console.WriteLine($"level-baker: baked {catalog.Count} levels -> {outputPath}");
 }
 catch (InvalidOperationException exception)
 {

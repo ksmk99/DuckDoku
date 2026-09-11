@@ -24,7 +24,7 @@ namespace DuckDoku.Puzzle
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(size), size, 
-                    $"Размер поля должен быть от {MinSize} до {MaxSize}.");
+                    $"Board size must be between {MinSize} and {MaxSize}.");
             }
 
             if (regions == null)
@@ -41,7 +41,7 @@ namespace DuckDoku.Puzzle
             if (regions.Length != cellCount)
             {
                 throw new ArgumentException(
-                    $"Карта областей должна содержать {cellCount} элементов, получено {regions.Length}.",
+                    $"Region map must contain {cellCount} elements, got {regions.Length}.",
                     nameof(regions));
             }
             
@@ -52,8 +52,8 @@ namespace DuckDoku.Puzzle
                 if (region < 0 || region >= size)
                 {
                     throw new ArgumentException(
-                        $"Клетка ({index / size}, {index % size}) ссылается на область {region}, " +
-                        $"допустимы значения 0..{size - 1}.",
+                        $"Cell ({index / size}, {index % size}) references region {region}, " +
+                        $"valid values are 0..{size - 1}.",
                         nameof(regions));
                 }
 
@@ -64,14 +64,14 @@ namespace DuckDoku.Puzzle
             {
                 if (!regionUsed[region])
                 {
-                    throw new ArgumentException($"Область {region} не содержит ни одной клетки.", nameof(regions));
+                    throw new ArgumentException($"Region {region} contains no cells.", nameof(regions));
                 }
             }
 
             if (solution.Length != size)
             {
                 throw new ArgumentException(
-                    $"Решение должно содержать {size} клеток, получено {solution.Length}.",
+                    $"Solution must contain {size} cells, got {solution.Length}.",
                     nameof(solution));
             }
             
@@ -81,7 +81,7 @@ namespace DuckDoku.Puzzle
                 if (cell.Row < 0 || cell.Row >= size || cell.Column < 0 || cell.Column >= size)
                 {
                     throw new ArgumentException(
-                        $"Клетка решения {cell} выходит за пределы поля {size}x{size}.",
+                        $"Solution cell {cell} is out of bounds for board {size}x{size}.",
                         nameof(solution));
                 }
             }

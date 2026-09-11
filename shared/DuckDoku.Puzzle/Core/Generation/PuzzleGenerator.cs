@@ -14,7 +14,7 @@ namespace DuckDoku.Puzzle
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(size), size,
-                    $"Размер поля должен быть от {PuzzleDefinition.MinSize} до {PuzzleDefinition.MaxSize}.");
+                    $"Board size must be between {PuzzleDefinition.MinSize} and {PuzzleDefinition.MaxSize}.");
             }
 
             PuzzleRandom rng = new PuzzleRandom(seed);
@@ -43,7 +43,7 @@ namespace DuckDoku.Puzzle
             }
 
             throw new InvalidOperationException(
-                $"Не удалось сгенерировать уровень {size}x{size} ({difficulty}) за {AttemptLimit} попыток.");
+                $"Failed to generate a {size}x{size} level ({difficulty}) within {AttemptLimit} attempts.");
         }
 
         private static bool IsWellShaped(int size, int[] regions, int[] caps)

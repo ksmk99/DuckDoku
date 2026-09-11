@@ -6,12 +6,13 @@ using Zenject;
 
 namespace DuckDoku.Presentation
 {
-    public class BoardPresenter : IInitializable, IDisposable, ITickable, IBoardGestureTarget, IBoardEditability
+    public class BoardPresenter : IInitializable, IDisposable, ITickable, IBoardGestureTarget, IBoardEditability, ISessionAttachable
     {
         private readonly BoardView _boardView;
         private readonly CellFeedbackConfig _feedback;
         private readonly BoardInputConfig _inputConfig;
         private readonly HintService _hintService;
+        private readonly ISfxPlayer _sfxPlayer;
         private readonly BoardGesture _gesture;
 
         private BoardSession _session;
@@ -22,7 +23,8 @@ namespace DuckDoku.Presentation
             BoardView boardView,
             CellFeedbackConfig feedback,
             BoardInputConfig inputConfig,
-            HintService hintService)
+            HintService hintService,
+            ISfxPlayer sfxPlayer)
         {
             if (boardView == null)
             {
@@ -44,10 +46,16 @@ namespace DuckDoku.Presentation
                 throw new ArgumentNullException(nameof(hintService));
             }
 
+            if (sfxPlayer == null)
+            {
+                throw new ArgumentNullException(nameof(sfxPlayer));
+            }
+
             _boardView = boardView;
             _feedback = feedback;
             _inputConfig = inputConfig;
             _hintService = hintService;
+            _sfxPlayer = sfxPlayer;
             _gesture = new BoardGesture(this, _inputConfig.DoubleTapSeconds, _inputConfig.StaleGestureTimeoutSeconds);
         }
 
@@ -68,17 +76,17 @@ namespace DuckDoku.Presentation
 
             _hintService.Changed -= OnHintChanged;
 
-            DetachBoard();
+            Detach();
         }
 
-        public void AttachBoard(BoardSession session)
+        public void Attach(BoardSession session)
         {
             if (session == null)
             {
                 throw new ArgumentNullException(nameof(session));
             }
 
-            DetachBoard();
+            Detach();
 
             _session = session;
             _session.Board.CellChanged += OnCellChanged;
@@ -93,7 +101,7 @@ namespace DuckDoku.Presentation
             RedrawAll();
         }
 
-        public void DetachBoard()
+        public void Detach()
         {
             if (_session == null)
             {
@@ -169,6 +177,20 @@ namespace DuckDoku.Presentation
 
         private void OnCellChanged(int row, int column)
         {
+            CellState state = ApplyCellState(row, column);
+
+            if (state == CellState.Cross)
+            {
+                _sfxPlayer.Play(SfxId.CrossPlaced);
+            }
+            else if (state == CellState.Empty)
+            {
+                _sfxPlayer.Play(SfxId.CrossRemoved);
+            }
+        }
+
+        private CellState ApplyCellState(int row, int column)
+        {
             CellState state = _session.Board.GetCellState(row, column);
 
             _boardView.Show(row, column, state, _session.Board.HasConflict(row, column));
@@ -177,6 +199,8 @@ namespace DuckDoku.Presentation
             {
                 _boardView.PlayCrossPainted(row, column);
             }
+
+            return state;
         }
 
         private void OnHintChanged()
@@ -202,12 +226,14 @@ namespace DuckDoku.Presentation
         private void OnDuckRejected(Cell cell)
         {
             _boardView.PlayWrongPlacement(cell.Row, cell.Column);
+            _sfxPlayer.Play(SfxId.WrongPlacement);
         }
 
         private void PlayCorrectPlacementFeedback(int row, int column, BoardState board)
         {
             _boardView.PlayCorrectPlacement(row, column);
-            
+            _sfxPlayer.Play(SfxId.DuckPlaced);
+
             if (board.IsSolved)
             {
                 return;
@@ -252,7 +278,7 @@ namespace DuckDoku.Presentation
             {
                 for (int column = 0; column < _session.Board.Size; column++)
                 {
-                    OnCellChanged(row, column);
+                    ApplyCellState(row, column);
                 }
             }
         }

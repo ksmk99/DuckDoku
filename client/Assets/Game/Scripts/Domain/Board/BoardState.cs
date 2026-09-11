@@ -144,13 +144,13 @@ namespace DuckDoku.Domain
             if (row < 0 || row >= Size)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(row), row, $"Строка должна быть от 0 до {Size - 1}.");
+                    nameof(row), row, $"Row must be between 0 and {Size - 1}.");
             }
 
             if (column < 0 || column >= Size)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(column), column, $"Колонка должна быть от 0 до {Size - 1}.");
+                    nameof(column), column, $"Column must be between 0 and {Size - 1}.");
             }
 
             return row * Size + column;

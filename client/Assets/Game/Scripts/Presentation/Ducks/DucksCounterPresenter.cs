@@ -3,7 +3,7 @@ using DuckDoku.Domain;
 
 namespace DuckDoku.Presentation
 {
-    public class DucksCounterPresenter : IDisposable
+    public class DucksCounterPresenter : IDisposable, ISessionAttachable
     {
         private readonly DucksCounterView _view;
 

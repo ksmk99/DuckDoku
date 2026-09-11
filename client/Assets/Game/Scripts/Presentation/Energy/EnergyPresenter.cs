@@ -14,22 +14,19 @@ namespace DuckDoku.Presentation
         private readonly EnergyView _view;
         private readonly IEnergyService _energyService;
         private readonly IPopupService _popupService;
-        private readonly EnergyPopupView _popupPrefab;
-        private readonly PopupRoot _popupRoot;
+        private readonly EnergyPopupView.Factory _popupFactory;
 
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         public EnergyPresenter(EnergyView view,
             IEnergyService energyService,
             IPopupService popupService,
-            EnergyPopupView popupPrefab,
-            PopupRoot popupRoot)
+            EnergyPopupView.Factory popupFactory)
         {
             _view = view;
             _energyService = energyService;
             _popupService = popupService;
-            _popupPrefab = popupPrefab;
-            _popupRoot = popupRoot;
+            _popupFactory = popupFactory;
         }
 
         public void Initialize()
@@ -82,7 +79,7 @@ namespace DuckDoku.Presentation
 
         private async UniTaskVoid ShowPopupAsync()
         {
-            EnergyPopupView popup = GameObject.Instantiate(_popupPrefab, _popupRoot.transform);
+            EnergyPopupView popup = _popupFactory.Create();
             EnergySnapshot snapshot = _energyService.Current;
             
             popup.SetCountdown(_energyService.TimeUntilNext);

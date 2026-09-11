@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08c26b88d01c2e94fa17148f74a0a7cc, type: 3}
+  m_Name: Sfx Config
+  m_EditorClassIdentifier: DuckDoku.App::DuckDoku.App.SfxConfig
+  _entries:
+  - Id: 0
+    Clip: {fileID: 8300000, guid: 25b183edec8191a489396ecb0d5b859f, type: 3}
+    Volume: 1
+    PitchMin: 1
+    PitchMax: 1
+  - Id: 1
+    Clip: {fileID: 8300000, guid: 7b124bd97aadc3247af1d02b8e0194fa, type: 3}
+    Volume: 1
+    PitchMin: 1
+    PitchMax: 1
+  - Id: 2
+    Clip: {fileID: 8300000, guid: 32168dc92789d204c966a85e00918dc9, type: 3}
+    Volume: 1
+    PitchMin: 0.95
+    PitchMax: 1.05
+  - Id: 3
+    Clip: {fileID: 8300000, guid: a08a10755d348dc44a8681dacd235679, type: 3}
+    Volume: 1
+    PitchMin: 0.95
+    PitchMax: 1.05
+  - Id: 4
+    Clip: {fileID: 8300000, guid: 8cda6ea51abc222449c5529187ef34c1, type: 3}
+    Volume: 1
+    PitchMin: 1
+    PitchMax: 1

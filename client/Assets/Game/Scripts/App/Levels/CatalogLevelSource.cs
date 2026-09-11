@@ -20,7 +20,7 @@ namespace DuckDoku.App
             LevelRecord record = _catalog.Levels.FirstOrDefault(level => level.Id == levelId);
             if (record.Id == 0)
             {
-                throw new InvalidOperationException("Уровень не найден.");
+                throw new InvalidOperationException("Level not found.");
             }
 
             return UniTask.FromResult(new LevelToPlay(record.Id, ToDefinition(record)));

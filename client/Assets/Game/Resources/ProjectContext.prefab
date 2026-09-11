@@ -593,3 +593,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DuckDoku.App::DuckDoku.App.CoreInstaller
   _serverConfig: {fileID: 11400000, guid: 3c10d344393c5224b81b316056bb02e9, type: 2}
+  _sfxConfig: {fileID: 11400000, guid: c7860338a3cdc3e439a6c80ed6159881, type: 2}

@@ -46,7 +46,7 @@ namespace DuckDoku.Tests
         {
             if (_cells[row, column] == FakeCell.Locked)
             {
-                throw new InvalidOperationException($"Запись в залоченную клетку {row}:{column}.");
+                throw new InvalidOperationException($"Write to a locked cell {row}:{column}.");
             }
 
             _cells[row, column] = marked ? FakeCell.Cross : FakeCell.Empty;

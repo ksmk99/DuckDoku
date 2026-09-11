@@ -53,7 +53,7 @@ public static class LevelBaking
         }
 
         throw new InvalidOperationException(
-            $"Не удалось испечь уникальный уровень {size}x{size} ({difficulty}) за {AttemptBudgetPerLevel} попыток.");
+            $"Failed to bake a unique {size}x{size} level ({difficulty}) within {AttemptBudgetPerLevel} attempts.");
     }
 
     private static int[] ExtractRegions(PuzzleDefinition definition)

@@ -13,7 +13,11 @@ namespace DuckDoku.App
         {
             Container.Bind<IEnergyClient>().To<EnergyClient>().AsSingle();
             Container.BindInterfacesAndSelfTo<EnergyService>().AsSingle();
-            Container.BindInstance(_energyPopupPrefab);
+
+            Container.BindFactory<EnergyPopupView, EnergyPopupView.Factory>()
+                .FromComponentInNewPrefab(_energyPopupPrefab)
+                .UnderTransform(ctx => ctx.Container.Resolve<PopupRoot>().transform)
+                .AsCached();
         }
     }
 }

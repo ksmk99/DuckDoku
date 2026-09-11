@@ -9,7 +9,6 @@ namespace DuckDoku.Presentation
     public class HintsView : MonoBehaviour
     {
         [SerializeField] private Button _button;
-        [SerializeField] private TMP_Text _valueText;
         [SerializeField] private GameObject _priceBadge;
         [SerializeField] private TMP_Text _priceValueText;
         [SerializeField] private Vector3 _punchStrength = new Vector3(0.2f, 0.2f, 0f);
@@ -20,14 +19,11 @@ namespace DuckDoku.Presentation
 
         public void ShowCount(int count)
         {
-            _valueText.gameObject.SetActive(true);
             _priceBadge.SetActive(false);
-            _valueText.text = $"{count}";
         }
 
         public void ShowPrice(int cost)
         {
-            _valueText.gameObject.SetActive(false);
             _priceBadge.SetActive(true);
             _priceValueText.text = $"{cost}";
         }

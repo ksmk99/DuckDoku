@@ -37,6 +37,7 @@ namespace DuckDoku.Domain
 
         public BoardState Board { get; }
         public MistakeTracker Mistakes { get; }
+        public IReadOnlyCollection<Cell> Solution => _solution;
 
         public void SetMark(int row, int column, bool marked)
         {

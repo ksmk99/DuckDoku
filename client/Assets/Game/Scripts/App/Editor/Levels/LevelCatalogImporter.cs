@@ -17,7 +17,7 @@ namespace DuckDoku.App
 
             if (!File.Exists(jsonPath))
             {
-                Debug.LogError($"LevelCatalogImporter: файл не найден — {jsonPath}");
+                Debug.LogError($"LevelCatalogImporter: file not found — {jsonPath}");
                 return;
             }
 
@@ -26,7 +26,7 @@ namespace DuckDoku.App
 
             if (raw == null || raw.levels == null)
             {
-                Debug.LogError("LevelCatalogImporter: не удалось разобрать catalog.json.");
+                Debug.LogError("LevelCatalogImporter: failed to parse catalog.json.");
                 return;
             }
 
@@ -43,7 +43,7 @@ namespace DuckDoku.App
             EditorUtility.SetDirty(asset);
             AssetDatabase.SaveAssets();
 
-            Debug.Log($"LevelCatalogImporter: испечено {asset.Levels.Length} уровней, catalogVersion={asset.CatalogVersion}.");
+            Debug.Log($"LevelCatalogImporter: baked {asset.Levels.Length} levels, catalogVersion={asset.CatalogVersion}.");
         }
 
         private static LevelRecord ToRecord(LevelEntryJson entry)

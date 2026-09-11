@@ -10,7 +10,7 @@ namespace DuckDoku.Puzzle
         {
             if (size <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(size), size, "Размер поля должен быть положительным.");
+                throw new ArgumentOutOfRangeException(nameof(size), size, "Board size must be positive.");
             }
 
             if (rng == null)

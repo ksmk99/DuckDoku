@@ -12,7 +12,7 @@ namespace DuckDoku.Api
         public DbSet<Player> Players => Set<Player>();
 
         public DbSet<Device> Devices => Set<Device>();
-        
+
         public DbSet<LevelProgress> LevelProgress => Set<LevelProgress>();
         public DbSet<LevelSession> LevelSession => Set<LevelSession>();
         public DbSet<EnergyState> Energy => Set<EnergyState>();
@@ -24,19 +24,35 @@ namespace DuckDoku.Api
             modelBuilder.Entity<Device>()
                 .HasIndex(device => device.Token)
                 .IsUnique();
-            
+
+            modelBuilder.Entity<Device>()
+                .HasIndex(device => device.DeviceId)
+                .IsUnique();
+
             modelBuilder.Entity<LevelProgress>()
                 .HasIndex(progress => new { progress.PlayerId, progress.LevelId })
                 .IsUnique();
-            
+
             modelBuilder.Entity<EnergyState>()
                 .HasKey(state => state.PlayerId);
+
+            modelBuilder.Entity<EnergyState>()
+                .Property(state => state.Version)
+                .IsRowVersion();
 
             modelBuilder.Entity<CurrencyState>()
                 .HasKey(state => state.PlayerId);
 
+            modelBuilder.Entity<CurrencyState>()
+                .Property(state => state.Version)
+                .IsRowVersion();
+
             modelBuilder.Entity<HintsState>()
                 .HasKey(state => state.PlayerId);
+
+            modelBuilder.Entity<HintsState>()
+                .Property(state => state.Version)
+                .IsRowVersion();
         }
     }
 
@@ -45,24 +61,27 @@ namespace DuckDoku.Api
         public Guid PlayerId { get; set; }
         public int Value { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public uint Version { get; set; }
     }
 
     public class CurrencyState
     {
         public Guid PlayerId { get; set; }
         public int Balance { get; set; }
+        public uint Version { get; set; }
     }
 
     public class HintsState
     {
         public Guid PlayerId { get; set; }
         public int Count { get; set; }
+        public uint Version { get; set; }
     }
 
     public class Player
     {
         public Guid Id { get; set; }
-        public string? DisplayName { get; set; } 
+        public string? DisplayName { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
@@ -75,7 +94,7 @@ namespace DuckDoku.Api
         public Guid PlayerId { get; set; }
 
         public DateTime LastSeenAt { get; set; }
-        
+
         public string Token { get; set; } = "";
     }
 }

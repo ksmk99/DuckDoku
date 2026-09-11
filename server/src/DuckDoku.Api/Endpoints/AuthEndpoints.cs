@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace DuckDoku.Api.Endpoints
 {
@@ -27,32 +28,58 @@ namespace DuckDoku.Api.Endpoints
             Device? device = await database.Devices
                 .FirstOrDefaultAsync(candidate => candidate.DeviceId == request.DeviceId);
 
-            if (device is null)
-            {
-                Player player = new Player
-                {
-                    Id = Guid.NewGuid(),
-                    CreatedAt = now
-                };
-
-                device = new Device
-                {
-                    Id = Guid.NewGuid(),
-                    DeviceId = request.DeviceId,
-                    Token = PlayerAuthentication.CreateToken(),
-                    PlayerId = player.Id,
-                    LastSeenAt = now
-                };
-
-                database.Players.Add(player);
-                database.Devices.Add(device);
-            }
-            else
+            if (device is not null)
             {
                 device.LastSeenAt = now;
+                await database.SaveChangesAsync();
+
+                return Results.Ok(new GuestResponse(device.PlayerId, device.Token));
             }
 
-            await database.SaveChangesAsync();
+            Player player = new Player
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = now
+            };
+
+            device = new Device
+            {
+                Id = Guid.NewGuid(),
+                DeviceId = request.DeviceId,
+                Token = PlayerAuthentication.CreateToken(),
+                PlayerId = player.Id,
+                LastSeenAt = now
+            };
+
+            database.Players.Add(player);
+            database.Devices.Add(device);
+
+            try
+            {
+                await database.SaveChangesAsync();
+            }
+            catch (DbUpdateException exception)
+            {
+                if (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation } postgres
+                    && postgres.ConstraintName is not null
+                    && postgres.ConstraintName.Contains("DeviceId", StringComparison.OrdinalIgnoreCase))
+                {
+                    database.Entry(player).State = EntityState.Detached;
+                    database.Entry(device).State = EntityState.Detached;
+
+                    device = await database.Devices
+                        .FirstOrDefaultAsync(candidate => candidate.DeviceId == request.DeviceId);
+
+                    if (device is null)
+                    {
+                        throw;
+                    }
+                }
+                else
+                {
+                    throw; 
+                }
+            }
 
             return Results.Ok(new GuestResponse(device.PlayerId, device.Token));
         }

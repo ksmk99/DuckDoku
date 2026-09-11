@@ -15,6 +15,11 @@ namespace DuckDoku.App
 
         public override void InstallBindings()
         {
+            Container.BindFactory<LevelView, LevelView.Factory>()
+                .FromComponentInNewPrefab(_levelsScrollData.LevelPrefab)
+                .UnderTransform(_levelsScrollData.Content)
+                .AsCached();
+
             Container
                 .BindInterfacesAndSelfTo<LevelsScrollController>()
                 .AsSingle()

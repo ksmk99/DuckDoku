@@ -12,7 +12,11 @@ namespace DuckDoku.App
         public override void InstallBindings()
         {
             Container.BindInstance(_hintsView);
-            Container.BindInstance(_hintsPopupPrefab);
+
+            Container.BindFactory<HintsPopupView, HintsPopupView.Factory>()
+                .FromComponentInNewPrefab(_hintsPopupPrefab)
+                .UnderTransform(ctx => ctx.Container.Resolve<PopupRoot>().transform)
+                .AsCached();
 
             Container.BindInterfacesAndSelfTo<HintsPresenter>().AsSingle();
             Container.BindInterfacesAndSelfTo<HintFlowCoordinator>().AsSingle();

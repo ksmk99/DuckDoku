@@ -5,7 +5,7 @@ namespace DuckDoku.App
     [CreateAssetMenu(fileName = "BootRetryConfig", menuName = "DuckDoku/Boot Retry Config")]
     public class BootRetryConfig : ScriptableObject
     {
-        [Header("Окно попыток")]
+        [Header("Retry window")]
         [SerializeField] private float _maxRetryWindowSeconds = 90f;
 
         [Header("Backoff")]

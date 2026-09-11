@@ -31,6 +31,12 @@ namespace DuckDoku.Api.Migrations
                     b.Property<int>("Balance")
                         .HasColumnType("integer");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("PlayerId");
 
                     b.ToTable("Currency");
@@ -58,6 +64,9 @@ namespace DuckDoku.Api.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DeviceId")
+                        .IsUnique();
+
                     b.HasIndex("Token")
                         .IsUnique();
 
@@ -76,6 +85,12 @@ namespace DuckDoku.Api.Migrations
                     b.Property<int>("Value")
                         .HasColumnType("integer");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("PlayerId");
 
                     b.ToTable("Energy");
@@ -89,6 +104,12 @@ namespace DuckDoku.Api.Migrations
 
                     b.Property<int>("Count")
                         .HasColumnType("integer");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("PlayerId");
 

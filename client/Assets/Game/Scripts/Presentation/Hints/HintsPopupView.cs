@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 namespace DuckDoku.Presentation
 {
@@ -10,6 +11,10 @@ namespace DuckDoku.Presentation
         public void SetPrice(int cost)
         {
             _priceText.text = $"A hint costs {cost} coins.";
+        }
+
+        public class Factory : PlaceholderFactory<HintsPopupView>
+        {
         }
     }
 }

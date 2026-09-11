@@ -4,11 +4,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using Zenject;
 
 namespace DuckDoku.Presentation
 {
     public class LevelView : MonoBehaviour
-    { 
+    {
         [SerializeField] private Button _button;
         [SerializeField] private TMP_Text[] _levelTexts;
         [Space]
@@ -50,6 +51,10 @@ namespace DuckDoku.Presentation
         private void Click()
         {
             Onclick?.Invoke();
+        }
+
+        public class Factory : PlaceholderFactory<LevelView>
+        {
         }
     }
 

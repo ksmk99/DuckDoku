@@ -51,7 +51,7 @@ namespace DuckDoku.Presentation.Editor
             DrawRegionColors();
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("ЛКМ — состояние клетки, ПКМ — регион", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField("LMB — cell state, RMB — region", EditorStyles.miniLabel);
             EditorGUILayout.Space(4);
 
             DrawGrid(size);
@@ -61,10 +61,10 @@ namespace DuckDoku.Presentation.Editor
 
         private void DrawRegionColors()
         {
-            EditorGUILayout.LabelField("Регионы", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Regions", EditorStyles.boldLabel);
 
             int regionCount = _regionColors.arraySize;
-            int newRegionCount = EditorGUILayout.IntSlider("Кол-во регионов", regionCount, 1, MaxRegions);
+            int newRegionCount = EditorGUILayout.IntSlider("Region count", regionCount, 1, MaxRegions);
 
             if (newRegionCount != regionCount)
             {
@@ -74,7 +74,7 @@ namespace DuckDoku.Presentation.Editor
             for (int i = 0; i < _regionColors.arraySize; i++)
             {
                 SerializedProperty colorProperty = _regionColors.GetArrayElementAtIndex(i);
-                EditorGUILayout.PropertyField(colorProperty, new GUIContent($"Регион {i}"));
+                EditorGUILayout.PropertyField(colorProperty, new GUIContent($"Region {i}"));
             }
         }
 

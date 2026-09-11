@@ -118,7 +118,7 @@ namespace DuckDoku.Tests
 
             for (int column = 0; column <= 4; column++)
             {
-                Assert.That(_board.At(0, column), Is.EqualTo(FakeCell.Cross), $"клетка 0:{column}");
+                Assert.That(_board.At(0, column), Is.EqualTo(FakeCell.Cross), $"cell 0:{column}");
             }
         }
 
@@ -191,7 +191,7 @@ namespace DuckDoku.Tests
             Assert.That(_board.At(7, 6), Is.EqualTo(FakeCell.Empty));
             Assert.That(_board.At(0, 0), Is.EqualTo(FakeCell.Cross));
             Assert.That(_board.At(0, 1), Is.EqualTo(FakeCell.Cross));
-            Assert.That(_board.At(4, 4), Is.EqualTo(FakeCell.Empty), "линия между пальцами");
+            Assert.That(_board.At(4, 4), Is.EqualTo(FakeCell.Empty), "line between fingers");
         }
 
         [Test]

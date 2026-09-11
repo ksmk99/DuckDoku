@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using DuckDoku.Domain;
 using DuckDoku.Presentation;
@@ -16,10 +17,7 @@ namespace DuckDoku.App
         private readonly IBoardSessionFactory _sessionFactory;
         private readonly IStateMachine _stateMachine;
         private readonly ILevelFinishContext _finishContext;
-        private readonly BoardPresenter _boardPresenter;
-        private readonly LivesPresenter _livesPresenter;
-        private readonly DucksCounterPresenter _ducksCounterPresenter;
-        private readonly HintService _hintService;
+        private readonly List<ISessionAttachable> _sessionAttachables;
         private readonly HintFlowCoordinator _hintFlowCoordinator;
         private readonly ILevelStartSignal _startSignal;
         private readonly ExitLevelView _exitLevelView;
@@ -37,10 +35,7 @@ namespace DuckDoku.App
             IBoardSessionFactory sessionFactory,
             IStateMachine stateMachine,
             ILevelFinishContext finishContext,
-            BoardPresenter boardPresenter,
-            LivesPresenter livesPresenter,
-            DucksCounterPresenter ducksCounterPresenter,
-            HintService hintService,
+            List<ISessionAttachable> sessionAttachables,
             HintFlowCoordinator hintFlowCoordinator,
             ILevelStartSignal startSignal,
             ExitLevelView exitLevelView)
@@ -75,24 +70,9 @@ namespace DuckDoku.App
                 throw new ArgumentNullException(nameof(finishContext));
             }
 
-            if (boardPresenter == null)
+            if (sessionAttachables == null)
             {
-                throw new ArgumentNullException(nameof(boardPresenter));
-            }
-
-            if (livesPresenter == null)
-            {
-                throw new ArgumentNullException(nameof(livesPresenter));
-            }
-
-            if (ducksCounterPresenter == null)
-            {
-                throw new ArgumentNullException(nameof(ducksCounterPresenter));
-            }
-
-            if (hintService == null)
-            {
-                throw new ArgumentNullException(nameof(hintService));
+                throw new ArgumentNullException(nameof(sessionAttachables));
             }
 
             if (hintFlowCoordinator == null)
@@ -116,10 +96,7 @@ namespace DuckDoku.App
             _sessionFactory = sessionFactory;
             _stateMachine = stateMachine;
             _finishContext = finishContext;
-            _boardPresenter = boardPresenter;
-            _livesPresenter = livesPresenter;
-            _ducksCounterPresenter = ducksCounterPresenter;
-            _hintService = hintService;
+            _sessionAttachables = sessionAttachables;
             _hintFlowCoordinator = hintFlowCoordinator;
             _startSignal = startSignal;
             _exitLevelView = exitLevelView;
@@ -172,10 +149,11 @@ namespace DuckDoku.App
             _session.Board.Solved += OnSolved;
             _session.Mistakes.Failed += OnFailed;
 
-            _boardPresenter.AttachBoard(_session);
-            _livesPresenter.Attach(_session.Mistakes);
-            _ducksCounterPresenter.Attach(_session);
-            _hintService.Attach(_session.Board, _puzzle);
+            foreach (ISessionAttachable attachable in _sessionAttachables)
+            {
+                attachable.Attach(_session);
+            }
+
             _hintFlowCoordinator.Attach(_levelId, _sessionId);
         }
 
@@ -189,10 +167,10 @@ namespace DuckDoku.App
             _session.Board.Solved -= OnSolved;
             _session.Mistakes.Failed -= OnFailed;
 
-            _boardPresenter.DetachBoard();
-            _livesPresenter.Detach();
-            _ducksCounterPresenter.Detach();
-            _hintService.Detach();
+            foreach (ISessionAttachable attachable in _sessionAttachables)
+            {
+                attachable.Detach();
+            }
 
             _session.Dispose();
             _session = null;
@@ -258,9 +236,7 @@ namespace DuckDoku.App
 
             DetachSession();
 
-            _finishContext.SetResult(LevelOutcome.Defeat, 0, 0, 0);
-
-            ShowFinishAsync().Forget();
+            _levelLauncher.ReturnToMap();
         }
 
         private async UniTaskVoid ShowFinishAsync()

@@ -2,6 +2,7 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Zenject;
 
 namespace DuckDoku.Presentation
 {
@@ -14,8 +15,16 @@ namespace DuckDoku.Presentation
         [SerializeField] private Button _button;
         [SerializeField] private ButtonFeedbackConfig _feedback;
 
+        private ISfxPlayer _sfxPlayer;
+
         private bool _isPressed;
         private bool _isHovering;
+
+        [Inject]
+        private void Construct(ISfxPlayer sfxPlayer)
+        {
+            _sfxPlayer = sfxPlayer;
+        }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
@@ -47,6 +56,8 @@ namespace DuckDoku.Presentation
             }
 
             _isPressed = true;
+
+            _sfxPlayer.Play(SfxId.ButtonClick);
 
             transform.DOKill();
             transform.DOScale(_feedback.PressScale, _feedback.PressDuration).SetEase(_feedback.PressEase);

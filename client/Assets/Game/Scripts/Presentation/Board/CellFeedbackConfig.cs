@@ -5,10 +5,10 @@ namespace DuckDoku.Presentation
     [CreateAssetMenu(fileName = "CellFeedbackConfig", menuName = "DuckDoku/Cell Feedback Config")]
     public class CellFeedbackConfig : ScriptableObject
     {
-        [Header("Крестик")]
+        [Header("Cross")]
         [SerializeField] private float _crossPulseDuration = 0.10f;
 
-        [Header("Верная утка")]
+        [Header("Correct duck")]
         [SerializeField] private float _anticipationScale = 0.9f;
         [SerializeField] private float _anticipationDuration = 0.04f;
         [SerializeField] private float _impactScale = 1.15f;
@@ -16,34 +16,34 @@ namespace DuckDoku.Presentation
         [SerializeField] private float _settleDuration = 0.08f;
         [SerializeField] private Color _successFlashColor = new Color(1f, 0.95f, 0.6f, 1f);
 
-        [Header("Ошибка")]
+        [Header("Error")]
         [SerializeField] private float _shakeDuration = 0.18f;
         [SerializeField] private int _shakeVibrato = 12;
         [SerializeField] private Vector3 _shakeStrength = new Vector3(6f, 0f, 0f);
         [SerializeField] private float _backgroundTintDuration = 0.15f;
         [SerializeField, Range(0f, 1f)] private float _blockedDarkenFactor = 0.55f;
 
-        [Header("Волна")]
+        [Header("Wave")]
         [SerializeField] private float _waveFlashDuration = 0.12f;
         [SerializeField] private float _waveSettleDuration = 0.18f;
         [SerializeField] private float _groupWaveDelayStep = 0.03f;
 
-        [Header("Появление сетки")]
+        [Header("Grid appearance")]
         [SerializeField] private Color _introBaseColor = Color.white;
         [SerializeField] private float _introPopScale = 0.85f;
         [SerializeField] private float _introPopDuration = 0.18f;
         [SerializeField] private float _introFillDuration = 0.22f;
         [SerializeField] private float _introWaveDelayStep = 0.035f;
 
-        [Header("Подсказка")]
+        [Header("Hint")]
         [SerializeField] private Color _hintAccentColor = new Color(1f, 0.85f, 0.3f, 0.85f);
         [SerializeField] private float _hintAccentPulseDuration = 0.5f;
 
-        [Header("Наведение")]
+        [Header("Hover")]
         [SerializeField] private Color _hoverColor = new Color(1f, 1f, 1f, 0.12f);
         [SerializeField] private float _hoverFadeDuration = 0.12f;
 
-        [Header("Недоступно")]
+        [Header("Unavailable")]
         [SerializeField] private float _blockedShakeDuration = 0.10f;
         [SerializeField] private int _blockedShakeVibrato = 8;
         [SerializeField] private Vector3 _blockedShakeStrength = new Vector3(3f, 0f, 0f);

@@ -12,15 +12,13 @@ namespace DuckDoku.Presentation
         private readonly IHintWalletService _hintWalletService;
         private readonly ICurrencyService _currencyService;
         private readonly IPopupService _popupService;
-        private readonly HintsPopupView _popupPrefab;
-        private readonly PopupRoot _popupRoot;
+        private readonly HintsPopupView.Factory _popupFactory;
 
         public HintsPresenter(HintsView view,
             IHintWalletService hintWalletService,
             ICurrencyService currencyService,
             IPopupService popupService,
-            HintsPopupView popupPrefab,
-            PopupRoot popupRoot)
+            HintsPopupView.Factory popupFactory)
         {
             if (view == null)
             {
@@ -42,22 +40,16 @@ namespace DuckDoku.Presentation
                 throw new ArgumentNullException(nameof(popupService));
             }
 
-            if (popupPrefab == null)
+            if (popupFactory == null)
             {
-                throw new ArgumentNullException(nameof(popupPrefab));
-            }
-
-            if (popupRoot == null)
-            {
-                throw new ArgumentNullException(nameof(popupRoot));
+                throw new ArgumentNullException(nameof(popupFactory));
             }
 
             _view = view;
             _hintWalletService = hintWalletService;
             _currencyService = currencyService;
             _popupService = popupService;
-            _popupPrefab = popupPrefab;
-            _popupRoot = popupRoot;
+            _popupFactory = popupFactory;
         }
 
         public void Initialize()
@@ -96,7 +88,7 @@ namespace DuckDoku.Presentation
 
         private async UniTaskVoid ShowPopupAsync(int cost)
         {
-            HintsPopupView popup = GameObject.Instantiate(_popupPrefab, _popupRoot.transform);
+            HintsPopupView popup = _popupFactory.Create();
             popup.SetPrice(cost);
 
             await _popupService.Show(popup);

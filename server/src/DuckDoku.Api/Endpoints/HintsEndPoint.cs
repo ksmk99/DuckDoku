@@ -1,5 +1,6 @@
 using DuckDoku.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace DuckDoku.Api.Endpoints;
 
@@ -41,51 +42,82 @@ public static class HintsEndPoint
             return Results.Unauthorized();
         }
 
-        CurrencyState? currencyState = await database.Currency
-            .FirstOrDefaultAsync(currency => currency.PlayerId == device.PlayerId);
+        const int maxAttempts = 3;
 
-        int balance = currencyState?.Balance ?? 0;
-
-        if (balance < HintPolicy.Cost)
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            throw new ApiException(ErrorCode.NotEnoughCurrency, "Not enough currency.");
-        }
+            CurrencyState? currencyState = await database.Currency
+                .FirstOrDefaultAsync(currency => currency.PlayerId == device.PlayerId);
 
-        balance -= HintPolicy.Cost;
+            int balance = currencyState?.Balance ?? 0;
 
-        if (currencyState is null)
-        {
-            database.Currency.Add(new CurrencyState
+            if (balance < HintPolicy.Cost)
             {
-                PlayerId = device.PlayerId,
-                Balance = balance
-            });
-        }
-        else
-        {
-            currencyState.Balance = balance;
-        }
+                throw new ApiException(ErrorCode.NotEnoughCurrency, "Not enough currency.");
+            }
 
-        HintsState? hintsState = await database.Hints
-            .FirstOrDefaultAsync(hints => hints.PlayerId == device.PlayerId);
+            balance -= HintPolicy.Cost;
 
-        int count = (hintsState?.Count ?? 0) + 1;
-
-        if (hintsState is null)
-        {
-            database.Hints.Add(new HintsState
+            if (currencyState is null)
             {
-                PlayerId = device.PlayerId,
-                Count = count
-            });
-        }
-        else
-        {
-            hintsState.Count = count;
+                currencyState = new CurrencyState
+                {
+                    PlayerId = device.PlayerId,
+                    Balance = balance
+                };
+
+                database.Currency.Add(currencyState);
+            }
+            else
+            {
+                currencyState.Balance = balance;
+            }
+
+            HintsState? hintsState = await database.Hints
+                .FirstOrDefaultAsync(hints => hints.PlayerId == device.PlayerId);
+
+            int count = (hintsState?.Count ?? 0) + 1;
+
+            if (hintsState is null)
+            {
+                hintsState = new HintsState
+                {
+                    PlayerId = device.PlayerId,
+                    Count = count
+                };
+
+                database.Hints.Add(hintsState);
+            }
+            else
+            {
+                hintsState.Count = count;
+            }
+
+            try
+            {
+                await database.SaveChangesAsync();
+
+                return Results.Ok(new PurchaseHintResponse(balance, count));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                database.Entry(currencyState).State = EntityState.Detached;
+                database.Entry(hintsState).State = EntityState.Detached;
+            }
+            catch (DbUpdateException exception)
+            {
+                if (exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+                {
+                    database.Entry(currencyState).State = EntityState.Detached;
+                    database.Entry(hintsState).State = EntityState.Detached;
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
-        await database.SaveChangesAsync();
-
-        return Results.Ok(new PurchaseHintResponse(balance, count));
+        throw new ApiException(ErrorCode.VersionConflict, "Could not update currency or hints, please retry.");
     }
 }

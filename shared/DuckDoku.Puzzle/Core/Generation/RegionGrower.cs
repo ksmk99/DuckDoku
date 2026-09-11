@@ -33,14 +33,14 @@ namespace DuckDoku.Puzzle
             if (solutionColumns.Length != size)
             {
                 throw new ArgumentException(
-                    $"Расстановка должна содержать {size} столбцов, получено {solutionColumns.Length}.",
+                    $"Placement must contain {size} columns, got {solutionColumns.Length}.",
                     nameof(solutionColumns));
             }
 
             if (caps.Length != size)
             {
                 throw new ArgumentException(
-                    $"Потолков должно быть {size}, получено {caps.Length}.",
+                    $"There must be {size} caps, got {caps.Length}.",
                     nameof(caps));
             }
 

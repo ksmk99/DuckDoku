@@ -31,7 +31,7 @@ namespace DuckDoku.Presentation
             if (regions.Length != size * size)
             {
                 throw new ArgumentException(
-                    $"Карта областей должна содержать {size * size} элементов, получено {regions.Length}.",
+                    $"Region map must contain {size * size} elements, got {regions.Length}.",
                     nameof(regions));
             }
 

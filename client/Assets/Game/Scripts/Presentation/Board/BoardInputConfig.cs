@@ -5,10 +5,10 @@ namespace DuckDoku.Presentation
     [CreateAssetMenu(fileName = "BoardInputConfig", menuName = "DuckDoku/Board Input Config")]
     public class BoardInputConfig : ScriptableObject
     {
-        [Header("Двойной клик")]
+        [Header("Double click")]
         [SerializeField] private float _doubleTapSeconds = 0.22f;
 
-        [Header("Защита от залипшего жеста")]
+        [Header("Stuck-gesture guard")]
         [SerializeField] private float _staleGestureTimeoutSeconds = 1.5f;
 
         public float DoubleTapSeconds => _doubleTapSeconds;

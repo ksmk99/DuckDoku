@@ -36,7 +36,7 @@ namespace DuckDoku.Puzzle
                 default:
                 {
                     throw new ArgumentOutOfRangeException(
-                        nameof(difficulty), difficulty, "Неизвестный класс сложности.");
+                        nameof(difficulty), difficulty, "Unknown difficulty class.");
                 }
             }
         }

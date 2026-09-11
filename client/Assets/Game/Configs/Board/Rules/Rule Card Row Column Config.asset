@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da54cf9e2a06479db2f7f32198417366, type: 3}
   m_Name: Rule Card Row Column Config
   m_EditorClassIdentifier: DuckDoku.Presentation::DuckDoku.Presentation.RuleCardConfig
-  _title: "1 \u043A\u043E\u0448\u043A\u0430 \u043D\u0430 \u0441\u0442\u0440\u043E\u043A\u0443
-    \u0438 \u0441\u0442\u043E\u043B\u0431\u0435\u0446"
+  _title: 1 Duck per column and row
   _size: 3
   _cells:
   - Row: 0

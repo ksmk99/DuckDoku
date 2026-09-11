@@ -14,6 +14,7 @@ namespace DuckDoku.Presentation
         private readonly LevelsScrollData _data;
         private readonly ILevelMapSource _levelMapSource;
         private readonly ILevelEntryGate _entryGate;
+        private readonly LevelView.Factory _levelViewFactory;
 
         private LevelViewPool _pool;
         private IReadOnlyList<LevelSummary> _levels;
@@ -30,16 +31,18 @@ namespace DuckDoku.Presentation
 
         public LevelsScrollController(LevelsScrollData data,
             ILevelMapSource levelMapSource,
-            ILevelEntryGate entryGate)
+            ILevelEntryGate entryGate,
+            LevelView.Factory levelViewFactory)
         {
             _data = data;
             _levelMapSource = levelMapSource;
             _entryGate = entryGate;
+            _levelViewFactory = levelViewFactory;
         }
 
         public void Initialize()
         {
-            _pool = new LevelViewPool(_data.LevelPrefab, _data.Content);
+            _pool = new LevelViewPool(_levelViewFactory);
         }
 
         private async UniTask Build()
@@ -224,6 +227,7 @@ namespace DuckDoku.Presentation
             foreach (KeyValuePair<int, ActiveSlot> pair in _active)
             {
                 pair.Value.Presenter.Dispose();
+                _pool.Release(pair.Value.View);
             }
 
             _active.Clear();

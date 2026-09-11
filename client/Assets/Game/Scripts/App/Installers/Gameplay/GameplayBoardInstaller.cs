@@ -18,7 +18,7 @@ namespace DuckDoku.App
             Container.Bind<BoardInputConfig>().FromInstance(_boardInputConfig).AsSingle();
 
             Container.Bind<IBoardSessionFactory>().To<BoardSessionFactory>().AsSingle();
-            Container.Bind<HintService>().AsSingle();
+            Container.BindInterfacesAndSelfTo<HintService>().AsSingle();
 
             Container.BindInterfacesAndSelfTo<BoardPresenter>().AsSingle();
             Container.BindInterfacesAndSelfTo<BoardHoverPresenter>().AsSingle();

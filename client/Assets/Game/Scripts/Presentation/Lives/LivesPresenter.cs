@@ -3,7 +3,7 @@ using DuckDoku.Domain;
 
 namespace DuckDoku.Presentation
 {
-    public class LivesPresenter : IDisposable
+    public class LivesPresenter : IDisposable, ISessionAttachable
     {
         private readonly LivesView _view;
 
@@ -19,16 +19,16 @@ namespace DuckDoku.Presentation
             _view = view;
         }
 
-        public void Attach(MistakeTracker mistakes)
+        public void Attach(BoardSession session)
         {
-            if (mistakes == null)
+            if (session == null)
             {
-                throw new ArgumentNullException(nameof(mistakes));
+                throw new ArgumentNullException(nameof(session));
             }
 
             Detach();
 
-            _mistakes = mistakes;
+            _mistakes = session.Mistakes;
             _mistakes.MistakeMade += OnMistakeMade;
 
             _view.ShowFull();

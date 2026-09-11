@@ -6,14 +6,14 @@ namespace DuckDoku.Presentation
     [CreateAssetMenu(fileName = "ButtonFeedbackConfig", menuName = "DuckDoku/Button Feedback Config")]
     public class ButtonFeedbackConfig : ScriptableObject
     {
-        [Header("Нажатие")]
+        [Header("Press")]
         [SerializeField] private float _pressScale = 0.94f;
         [SerializeField] private float _pressDuration = 0.07f;
         [SerializeField] private Ease _pressEase = Ease.OutQuad;
         [SerializeField] private float _releaseDuration = 0.11f;
         [SerializeField] private Ease _releaseEase = Ease.OutQuad;
 
-        [Header("Наведение")]
+        [Header("Hover")]
         [SerializeField] private float _hoverScale = 1.05f;
         [SerializeField] private float _hoverDuration = 0.12f;
         [SerializeField] private Ease _hoverEase = Ease.OutQuad;

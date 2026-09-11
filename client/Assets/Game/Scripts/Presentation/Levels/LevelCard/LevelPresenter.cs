@@ -29,7 +29,7 @@ namespace DuckDoku.Presentation
                 return;
             }
 
-            if (_model.LevelSummary.Status != LevelStatus.Unlocked)
+            if (_model.LevelSummary.Status == LevelStatus.Locked)
             {
                 return;
             }
